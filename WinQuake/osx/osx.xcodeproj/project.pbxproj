@@ -61,6 +61,7 @@
 		8F989A391870669E003F5893 /* gl_vidglfw.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F989A381870669E003F5893 /* gl_vidglfw.c */; };
 		8F989A3B18706842003F5893 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8F989A3A18706842003F5893 /* OpenGL.framework */; };
 		8F989A3C18706878003F5893 /* r_part.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F98997918705244003F5893 /* r_part.c */; };
+		8F989A3E1870868C003F5893 /* libglfw3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8F989A3D1870868C003F5893 /* libglfw3.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -276,6 +277,7 @@
 		8F989A3718705AAD003F5893 /* zone.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = zone.h; path = ../zone.h; sourceTree = "<group>"; };
 		8F989A381870669E003F5893 /* gl_vidglfw.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = gl_vidglfw.c; path = ../gl_vidglfw.c; sourceTree = "<group>"; };
 		8F989A3A18706842003F5893 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
+		8F989A3D1870868C003F5893 /* libglfw3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libglfw3.dylib; path = ../../../../../../usr/local/lib/libglfw3.dylib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -283,6 +285,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8F989A3E1870868C003F5893 /* libglfw3.dylib in Frameworks */,
 				8F989A3B18706842003F5893 /* OpenGL.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -293,6 +296,7 @@
 		8F9898C818704F81003F5893 = {
 			isa = PBXGroup;
 			children = (
+				8F989A3D1870868C003F5893 /* libglfw3.dylib */,
 				8F989A3A18706842003F5893 /* OpenGL.framework */,
 				8F9899F418705AAD003F5893 /* adivtab.h */,
 				8F9899F518705AAD003F5893 /* anorm_dots.h */,
@@ -787,11 +791,15 @@
 		8F9898DB18704F81003F5893 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ANALYZER_SECURITY_FLOATLOOPCOUNTER = YES;
+				CLANG_ANALYZER_SECURITY_INSECUREAPI_RAND = YES;
+				CLANG_ANALYZER_SECURITY_INSECUREAPI_STRCPY = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"/usr/local//Cellar/glfw3/3.0.3/include/",
 				);
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -799,11 +807,15 @@
 		8F9898DC18704F81003F5893 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ANALYZER_SECURITY_FLOATLOOPCOUNTER = YES;
+				CLANG_ANALYZER_SECURITY_INSECUREAPI_RAND = YES;
+				CLANG_ANALYZER_SECURITY_INSECUREAPI_STRCPY = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"/usr/local//Cellar/glfw3/3.0.3/include/",
 				);
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
