@@ -8,12 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		8F9898D718704F81003F5893 /* osx.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8F9898D618704F81003F5893 /* osx.1 */; };
-		8F98990018705138003F5893 /* screen.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F9898DD18705138003F5893 /* screen.c */; };
-		8F98990118705138003F5893 /* snd_dma.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F9898DE18705138003F5893 /* snd_dma.c */; };
-		8F98990318705138003F5893 /* snd_gus.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F9898E018705138003F5893 /* snd_gus.c */; };
-		8F98990518705138003F5893 /* snd_mem.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F9898E218705138003F5893 /* snd_mem.c */; };
-		8F98990618705138003F5893 /* snd_mix.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F9898E318705138003F5893 /* snd_mix.c */; };
-		8F98990718705138003F5893 /* snd_next.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F9898E418705138003F5893 /* snd_next.c */; };
 		8F98990818705138003F5893 /* snd_null.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F9898E518705138003F5893 /* snd_null.c */; };
 		8F98990B18705138003F5893 /* sv_main.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F9898E818705138003F5893 /* sv_main.c */; };
 		8F98990C18705138003F5893 /* sv_move.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F9898E918705138003F5893 /* sv_move.c */; };
@@ -57,7 +51,6 @@
 		8F9899BA18705244003F5893 /* net_dgrm.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F98995E18705244003F5893 /* net_dgrm.c */; };
 		8F9899BD18705244003F5893 /* net_loop.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F98996118705244003F5893 /* net_loop.c */; };
 		8F9899BE18705244003F5893 /* net_main.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F98996218705244003F5893 /* net_main.c */; };
-		8F9899C018705244003F5893 /* net_none.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F98996418705244003F5893 /* net_none.c */; };
 		8F9899C218705244003F5893 /* net_udp.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F98996618705244003F5893 /* net_udp.c */; };
 		8F9899C318705244003F5893 /* net_vcr.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F98996718705244003F5893 /* net_vcr.c */; };
 		8F9899C718705244003F5893 /* net_wso.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F98996B18705244003F5893 /* net_wso.c */; };
@@ -65,6 +58,9 @@
 		8F9899CA18705244003F5893 /* pr_edict.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F98996E18705244003F5893 /* pr_edict.c */; };
 		8F9899CB18705244003F5893 /* pr_exec.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F98996F18705244003F5893 /* pr_exec.c */; };
 		8F9899DA18705244003F5893 /* sbar.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F98997E18705244003F5893 /* sbar.c */; };
+		8F989A391870669E003F5893 /* gl_vidglfw.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F989A381870669E003F5893 /* gl_vidglfw.c */; };
+		8F989A3B18706842003F5893 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8F989A3A18706842003F5893 /* OpenGL.framework */; };
+		8F989A3C18706878003F5893 /* r_part.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F98997918705244003F5893 /* r_part.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -278,6 +274,8 @@
 		8F989A3518705AAD003F5893 /* winquake.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = winquake.h; path = ../winquake.h; sourceTree = "<group>"; };
 		8F989A3618705AAD003F5893 /* world.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = world.h; path = ../world.h; sourceTree = "<group>"; };
 		8F989A3718705AAD003F5893 /* zone.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = zone.h; path = ../zone.h; sourceTree = "<group>"; };
+		8F989A381870669E003F5893 /* gl_vidglfw.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = gl_vidglfw.c; path = ../gl_vidglfw.c; sourceTree = "<group>"; };
+		8F989A3A18706842003F5893 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -285,6 +283,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8F989A3B18706842003F5893 /* OpenGL.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -294,6 +293,7 @@
 		8F9898C818704F81003F5893 = {
 			isa = PBXGroup;
 			children = (
+				8F989A3A18706842003F5893 /* OpenGL.framework */,
 				8F9899F418705AAD003F5893 /* adivtab.h */,
 				8F9899F518705AAD003F5893 /* anorm_dots.h */,
 				8F9899F618705AAD003F5893 /* anorms.h */,
@@ -407,6 +407,7 @@
 		8F9899DC1870529A003F5893 /* gl */ = {
 			isa = PBXGroup;
 			children = (
+				8F989A381870669E003F5893 /* gl_vidglfw.c */,
 				8F989A0918705AAD003F5893 /* gl_model.h */,
 				8F989A0A18705AAD003F5893 /* gl_warp_sin.h */,
 				8F98994118705244003F5893 /* gl_draw.c */,
@@ -656,14 +657,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8F989A3C18706878003F5893 /* r_part.c in Sources */,
 				8F9899C718705244003F5893 /* net_wso.c in Sources */,
 				8F98992018705138003F5893 /* wad.c in Sources */,
 				8F9899B718705244003F5893 /* net_bsd.c in Sources */,
 				8F9899CB18705244003F5893 /* pr_exec.c in Sources */,
 				8F98991118705138003F5893 /* sys_null.c in Sources */,
-				8F9899C018705244003F5893 /* net_none.c in Sources */,
 				8F98999E18705244003F5893 /* gl_mesh.c in Sources */,
-				8F98990118705138003F5893 /* snd_dma.c in Sources */,
 				8F9899AC18705244003F5893 /* host.c in Sources */,
 				8F9899A118705244003F5893 /* gl_rlight.c in Sources */,
 				8F98998518705244003F5893 /* cl_input.c in Sources */,
@@ -674,13 +674,10 @@
 				8F98998618705244003F5893 /* cl_main.c in Sources */,
 				8F9899C318705244003F5893 /* net_vcr.c in Sources */,
 				8F9899A418705244003F5893 /* gl_rsurf.c in Sources */,
-				8F98990518705138003F5893 /* snd_mem.c in Sources */,
 				8F98998318705244003F5893 /* chase.c in Sources */,
-				8F98990318705138003F5893 /* snd_gus.c in Sources */,
 				8F9899AE18705244003F5893 /* in_null.c in Sources */,
 				8F98998D18705244003F5893 /* crc.c in Sources */,
 				8F9899A518705244003F5893 /* gl_screen.c in Sources */,
-				8F98990618705138003F5893 /* snd_mix.c in Sources */,
 				8F98998118705244003F5893 /* cd_null.c in Sources */,
 				8F9899C918705244003F5893 /* pr_cmds.c in Sources */,
 				8F9899A218705244003F5893 /* gl_rmain.c in Sources */,
@@ -688,6 +685,7 @@
 				8F9899B218705244003F5893 /* mathlib.c in Sources */,
 				8F9899B118705244003F5893 /* keys.c in Sources */,
 				8F98998918705244003F5893 /* cmd.c in Sources */,
+				8F989A391870669E003F5893 /* gl_vidglfw.c in Sources */,
 				8F9899BE18705244003F5893 /* net_main.c in Sources */,
 				8F98990D18705138003F5893 /* sv_phys.c in Sources */,
 				8F98990E18705138003F5893 /* sv_user.c in Sources */,
@@ -696,13 +694,11 @@
 				8F9899B318705244003F5893 /* menu.c in Sources */,
 				8F9899A618705244003F5893 /* gl_test.c in Sources */,
 				8F9899BD18705244003F5893 /* net_loop.c in Sources */,
-				8F98990018705138003F5893 /* screen.c in Sources */,
 				8F98998718705244003F5893 /* cl_parse.c in Sources */,
 				8F98999F18705244003F5893 /* gl_model.c in Sources */,
 				8F98990B18705138003F5893 /* sv_main.c in Sources */,
 				8F9899A318705244003F5893 /* gl_rmisc.c in Sources */,
 				8F98999D18705244003F5893 /* gl_draw.c in Sources */,
-				8F98990718705138003F5893 /* snd_next.c in Sources */,
 				8F98998E18705244003F5893 /* cvar.c in Sources */,
 				8F9899C218705244003F5893 /* net_udp.c in Sources */,
 				8F98990C18705138003F5893 /* sv_move.c in Sources */,
