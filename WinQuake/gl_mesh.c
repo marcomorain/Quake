@@ -62,6 +62,7 @@ int	StripLength (int starttri, int startv)
 	mtriangle_t	*last, *check;
 	int			k;
 
+    
 	used[starttri] = 2;
 
 	last = &triangles[starttri];
