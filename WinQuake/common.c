@@ -1019,7 +1019,7 @@ void COM_CheckRegistered (void)
 	int                     i;
 
 	COM_OpenFile("gfx/pop.lmp", &h);
-	static_registered = 0;
+	static_registered = 1;
 
 	if (h == -1)
 	{

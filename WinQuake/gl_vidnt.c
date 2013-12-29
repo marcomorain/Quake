@@ -1593,7 +1593,7 @@ void	VID_Init (unsigned char *palette)
 	Cvar_RegisterVariable (&_windowed_mouse);
 	Cvar_RegisterVariable (&gl_ztrick);
 
-	Cmd_AddCommand ("vid_nummodes", VID_NumModes_f);
+	Cmd_AddCommand ("vid_nummodes", V   ID_NumModes_f);
 	Cmd_AddCommand ("vid_describecurrentmode", VID_DescribeCurrentMode_f);
 	Cmd_AddCommand ("vid_describemode", VID_DescribeMode_f);
 	Cmd_AddCommand ("vid_describemodes", VID_DescribeModes_f);
