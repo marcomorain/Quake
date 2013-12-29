@@ -1,6 +1,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <signal.h>
+#include <GLFW/glfw3.h>
 #include "quakedef.h"
 
 float gldepthmin, gldepthmax;
@@ -14,6 +15,7 @@ cvar_t	gl_ztrick = {"gl_ztrick","1"};
 unsigned		d_8to24table[256];
 unsigned char	d_15to8table[65536];
 
+static GLFWwindow* window = NULL;
 
 void D_BeginDirectRect (int x, int y, byte *pbitmap, int width, int height)
 {
