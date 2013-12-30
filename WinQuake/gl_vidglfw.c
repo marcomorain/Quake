@@ -17,11 +17,15 @@ const char *gl_renderer;
 const char *gl_version;
 const char *gl_extensions;
 
-
 unsigned		d_8to24table[256];
 unsigned char	d_15to8table[65536];
 
 static GLFWwindow* window = NULL;
+
+struct {
+    int width;
+    int height;
+} window_settings;
 
 void D_BeginDirectRect (int x, int y, byte *pbitmap, int width, int height)
 {
@@ -136,6 +140,9 @@ void GL_Init (void)
 
 void GL_BeginRendering (int *x, int *y, int *width, int *height)
 {
+    *x = *y = 0;
+	*width  = window_settings.width;
+	*height = window_settings.height;
 }
 
 void GL_EndRendering (void)
@@ -166,26 +173,88 @@ void error_callback(int error, const char* description)
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    Con_Print("Key press\n");
+    if (action == GLFW_REPEAT) return;
+    
+#define KEY(g,q) case (g): key = (q); break;
+    
+    switch(key) {
+        // normal keys should be passed as lowercased ascii
+        KEY(GLFW_KEY_TAB, K_TAB);
+        KEY(GLFW_KEY_ENTER, K_ENTER);
+        KEY(GLFW_KEY_ESCAPE, K_ESCAPE);
+        KEY(GLFW_KEY_SPACE, K_SPACE);
+        KEY(GLFW_KEY_BACKSPACE, K_BACKSPACE);
+        
+        KEY(GLFW_KEY_UP, K_UPARROW);
+        KEY(GLFW_KEY_DOWN, K_DOWNARROW);
+        KEY(GLFW_KEY_LEFT, K_LEFTARROW);
+        KEY(GLFW_KEY_RIGHT, K_RIGHTARROW);
+            
+        default:
+            Con_Printf("key %d\n", key);
+            break;
+/*
+#define	K_ALT			132
+#define	K_CTRL			133
+#define	K_SHIFT			134
+#define	K_F1			135
+#define	K_F2			136
+#define	K_F3			137
+#define	K_F4			138
+#define	K_F5			139
+#define	K_F6			140
+#define	K_F7			141
+#define	K_F8			142
+#define	K_F9			143
+#define	K_F10			144
+#define	K_F11			145
+#define	K_F12			146
+#define	K_INS			147
+#define	K_DEL			148
+#define	K_PGDN			149
+#define	K_PGUP			150
+#define	K_HOME			151
+#define	K_END			152
+            
+#define K_PAUSE			255
+ 
+ */
+    }
+    
+    Key_Event(key, action == GLFW_PRESS);
+}
+
+static void size_callback(GLFWwindow* window, int w, int h)
+{
+    window_settings.width = w;
+    window_settings.height = h;
+    // force a surface cache flush
+    // TODO: is this needed?
+    vid.recalc_refdef = 1;
 }
 
 void VID_Init(unsigned char *palette)
 {
-    	char	gldir[MAX_OSPATH];
+    
+    window_settings.height = 480;
+    window_settings.width  = 640;
+
+    char	gldir[MAX_OSPATH];
     
     Con_Print("VID_Init\n");
     
     glfwSetErrorCallback(error_callback);
+
     
     /* Initialize the library */
     if (!glfwInit()) {
         Sys_Error("Error initialising GLFW");
     }
     
-    vid.maxwarpwidth = 320; // WARP_WIDTH;
-	vid.maxwarpheight = 200; // WARP_HEIGHT;
-    vid.width = 320;
-    vid.height = 200;
+    vid.maxwarpwidth  = window_settings.width;  // WARP_WIDTH;
+	vid.maxwarpheight = window_settings.height; // WARP_HEIGHT;
+    vid.width  = window_settings.width;
+    vid.height = window_settings.height;
     
 	vid.colormap = host_colormap;
 	vid.fullbright = 256 - LittleLong (*((int *)vid.colormap + 2048));
@@ -210,8 +279,7 @@ void VID_Init(unsigned char *palette)
 	vid.width = vid.conwidth;
 	vid.height = vid.conheight;
     
-	vid.aspect = ((float)vid.height / (float)vid.width) *
-    (320.0 / 240.0);
+	vid.aspect = ((float)vid.height / (float)vid.width) * (320.0 / 240.0);
 	vid.numpages = 2;
     
     /* Create a windowed mode window and its OpenGL context */
@@ -226,6 +294,7 @@ void VID_Init(unsigned char *palette)
     
     glfwMakeContextCurrent(window);
     glfwSetKeyCallback(window, key_callback);
+    glfwSetWindowSizeCallback(window, size_callback);
     
 	GL_Init();
     
