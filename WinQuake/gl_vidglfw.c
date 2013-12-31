@@ -226,7 +226,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
             KEY(161, 126); // ~
             
         default:
-            Con_Printf("key %d\n", key);
+            //Con_Printf("key %d\n", key);
             break;
     }
     
@@ -320,6 +320,7 @@ void VID_Init(unsigned char *palette)
     glfwSetKeyCallback(window, key_callback);
     glfwSetWindowSizeCallback(window, size_callback);
     glfwSetCursorPosCallback(window, cursor_callback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     
 	GL_Init();
     
@@ -382,9 +383,11 @@ void IN_MouseMove (usercmd_t *cmd)
     window_settings.mouse_delta.x = 0;
     window_settings.mouse_delta.y = 0;
 
-    window_settings.mouse.x = window_settings.width  / 2.0;
-    window_settings.mouse.y = window_settings.height / 2.0;
-    glfwSetCursorPos(window, window_settings.mouse.x, window_settings.mouse.y);
+    if (1) {
+        window_settings.mouse.x = window_settings.width  / 2.0;
+        window_settings.mouse.y = window_settings.height / 2.0;
+        glfwSetCursorPos(window, window_settings.mouse.x, window_settings.mouse.y);\
+    }
     
     x *= sensitivity.value;
 	y *= sensitivity.value;
