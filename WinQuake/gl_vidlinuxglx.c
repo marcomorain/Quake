@@ -550,7 +550,7 @@ void CheckMultiTextureExtensions(void)
 			Con_Printf("Unable to open symbol list for main program.\n");
 			return;
 		}
-
+        
 		qglMTexCoord2fSGIS = (void *) dlsym(prjobj, "glMTexCoord2fSGIS");
 		qglSelectTextureSGIS = (void *) dlsym(prjobj, "glSelectTextureSGIS");
 

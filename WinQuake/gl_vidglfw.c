@@ -126,7 +126,7 @@ void GL_Init (void)
     
     //	Con_Printf ("%s %s\n", gl_renderer, gl_version);
     
-    gl_mtexable = false; //CheckMultiTextureExtensions ();
+    gl_mtexable = false;
     
 	glClearColor (1,0,0,0);
 	glCullFace(GL_FRONT);
@@ -145,9 +145,10 @@ void GL_Init (void)
     
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
-    //	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    //glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 }
+
 
 void GL_BeginRendering (int *x, int *y, int *width, int *height)
 {
@@ -222,10 +223,8 @@ void Init_KBD(void)
 
 qboolean VID_Is8bit(void)
 {
-	//return is8bit;
-    return 1;
+    return 0;
 }
-
 
 void VID_Init8bitPalette(void)
 {
