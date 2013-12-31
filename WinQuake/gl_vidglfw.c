@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <signal.h>
@@ -20,6 +21,8 @@ const char *gl_extensions;
 
 unsigned		d_8to24table[256];
 unsigned char	d_15to8table[65536];
+
+static unsigned char glfw_to_quake_keys[GLFW_KEY_LAST+1] = {};
 
 static GLFWwindow* window = NULL;
 
@@ -161,6 +164,60 @@ void GL_EndRendering (void)
 
 void Init_KBD(void)
 {
+    for (int i=0; i <= GLFW_KEY_LAST; i++)
+    {
+        if (isprint(i))
+        {
+            // the engine expects normal keys to be lowercase
+            // swap and ASCII characters to lowercase (or leave unchanged).
+            glfw_to_quake_keys[i] = tolower(i);
+        }
+    }
+    
+    glfw_to_quake_keys[GLFW_KEY_TAB] =  K_TAB;
+    glfw_to_quake_keys[GLFW_KEY_ENTER] =  K_ENTER;
+    glfw_to_quake_keys[GLFW_KEY_ESCAPE] =  K_ESCAPE;
+    glfw_to_quake_keys[GLFW_KEY_SPACE] =  K_SPACE;
+    glfw_to_quake_keys[GLFW_KEY_BACKSPACE] =  K_BACKSPACE;
+    glfw_to_quake_keys[GLFW_KEY_UP] =             K_UPARROW;
+    glfw_to_quake_keys[GLFW_KEY_DOWN] =           K_DOWNARROW;
+    glfw_to_quake_keys[GLFW_KEY_LEFT] =           K_LEFTARROW;
+    glfw_to_quake_keys[GLFW_KEY_RIGHT] =          K_RIGHTARROW;
+    glfw_to_quake_keys[GLFW_KEY_RIGHT_ALT] =      K_ALT;
+    glfw_to_quake_keys[GLFW_KEY_LEFT_ALT] =       K_ALT;
+    glfw_to_quake_keys[GLFW_KEY_RIGHT_CONTROL] =  K_CTRL;
+    glfw_to_quake_keys[GLFW_KEY_LEFT_CONTROL] =   K_CTRL;
+    glfw_to_quake_keys[GLFW_KEY_RIGHT_SHIFT] =    K_SHIFT;
+    glfw_to_quake_keys[GLFW_KEY_LEFT_SHIFT] =     K_SHIFT;
+    glfw_to_quake_keys[GLFW_KEY_F1] =   K_F1;
+    glfw_to_quake_keys[GLFW_KEY_F2] =   K_F2;
+    glfw_to_quake_keys[GLFW_KEY_F3] =   K_F3;
+    glfw_to_quake_keys[GLFW_KEY_F4] =   K_F4;
+    glfw_to_quake_keys[GLFW_KEY_F5] =   K_F5;
+    glfw_to_quake_keys[GLFW_KEY_F6] =   K_F6;
+    glfw_to_quake_keys[GLFW_KEY_F7] =   K_F7;
+    glfw_to_quake_keys[GLFW_KEY_F8] =   K_F8;
+    glfw_to_quake_keys[GLFW_KEY_F9] =   K_F9;
+    glfw_to_quake_keys[GLFW_KEY_F10] =  K_F10;
+    glfw_to_quake_keys[GLFW_KEY_F11] =  K_F11;
+    glfw_to_quake_keys[GLFW_KEY_F12] =  K_F12;
+    glfw_to_quake_keys[GLFW_KEY_INSERT]     = K_INS;
+    glfw_to_quake_keys[GLFW_KEY_DELETE]     = K_DEL;
+    glfw_to_quake_keys[GLFW_KEY_PAGE_DOWN]  = K_PGDN;
+    glfw_to_quake_keys[GLFW_KEY_PAGE_UP]    = K_PGUP;
+    glfw_to_quake_keys[GLFW_KEY_HOME]       = K_HOME;
+    glfw_to_quake_keys[GLFW_KEY_END]        = K_END;
+    glfw_to_quake_keys[GLFW_KEY_PAUSE]      = K_PAUSE;
+    
+    // special
+    glfw_to_quake_keys[GLFW_KEY_LEFT_SUPER]  = K_CTRL;
+    glfw_to_quake_keys[GLFW_KEY_RIGHT_SUPER] = K_CTRL;
+    
+    // mouse
+    glfw_to_quake_keys[GLFW_MOUSE_BUTTON_1] = K_MOUSE1;
+    glfw_to_quake_keys[GLFW_MOUSE_BUTTON_2] = K_MOUSE2;
+    glfw_to_quake_keys[GLFW_MOUSE_BUTTON_3] = K_MOUSE3;
+    glfw_to_quake_keys[161] =  126; // ~
 }
 
 qboolean VID_Is8bit(void)
@@ -182,58 +239,7 @@ void error_callback(int error, const char* description)
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     if (action == GLFW_REPEAT) return;
-    
-#define KEY(g,q) case (g): key = (q); break;
-    
-    switch(key) {
-        // normal keys should be passed as lowercased ascii
-        KEY(GLFW_KEY_TAB, K_TAB);
-        KEY(GLFW_KEY_ENTER, K_ENTER);
-        KEY(GLFW_KEY_ESCAPE, K_ESCAPE);
-        KEY(GLFW_KEY_SPACE, K_SPACE);
-        KEY(GLFW_KEY_BACKSPACE, K_BACKSPACE);
-        
-        KEY(GLFW_KEY_UP,            K_UPARROW);
-        KEY(GLFW_KEY_DOWN,          K_DOWNARROW);
-        KEY(GLFW_KEY_LEFT,          K_LEFTARROW);
-        KEY(GLFW_KEY_RIGHT,         K_RIGHTARROW);
-        KEY(GLFW_KEY_RIGHT_ALT,     K_ALT);
-        KEY(GLFW_KEY_LEFT_ALT,      K_ALT);
-        KEY(GLFW_KEY_RIGHT_CONTROL, K_CTRL);
-        KEY(GLFW_KEY_LEFT_CONTROL,  K_CTRL);
-        KEY(GLFW_KEY_RIGHT_SHIFT,   K_SHIFT);
-        KEY(GLFW_KEY_LEFT_SHIFT,    K_SHIFT);
-        KEY(GLFW_KEY_F1, K_F1);
-        KEY(GLFW_KEY_F2, K_F2);
-        KEY(GLFW_KEY_F3, K_F3);
-        KEY(GLFW_KEY_F4, K_F4);
-        KEY(GLFW_KEY_F5, K_F5);
-        KEY(GLFW_KEY_F6, K_F6);
-        KEY(GLFW_KEY_F7, K_F7);
-        KEY(GLFW_KEY_F8, K_F8);
-        KEY(GLFW_KEY_F9, K_F9);
-        KEY(GLFW_KEY_F10, K_F10);
-        KEY(GLFW_KEY_F11, K_F11);
-        KEY(GLFW_KEY_F12, K_F12);
-        KEY(GLFW_KEY_INSERT, K_INS);
-        KEY(GLFW_KEY_DELETE, K_DEL);
-        KEY(GLFW_KEY_PAGE_DOWN, K_PGDN);
-        KEY(GLFW_KEY_PAGE_UP, K_PGUP);
-        KEY(GLFW_KEY_HOME, K_HOME);
-        KEY(GLFW_KEY_END, K_END);
-        KEY(GLFW_KEY_PAUSE, K_PAUSE);
-        
-            KEY(161, 126); // ~
-            
-        default:
-            //Con_Printf("key %d\n", key);
-            break;
-    }
-    
-    if (key < 256)
-    {
-        Key_Event(key, action == GLFW_PRESS);
-    }
+    Key_Event(glfw_to_quake_keys[key], action == GLFW_PRESS);
 }
 
 static void size_callback(GLFWwindow* window, int w, int h)
@@ -253,11 +259,19 @@ static void cursor_callback(GLFWwindow* window, double x, double y)
     window_settings.mouse.y = y;
 }
 
+static void click_callback(GLFWwindow* window, int button, int action, int mods)
+{
+    Key_Event(glfw_to_quake_keys[button], action == GLFW_PRESS);
+}
+
 
 void VID_Init(unsigned char *palette)
 {
     Cvar_RegisterVariable (&m_filter);
 	Cvar_RegisterVariable (&gl_ztrick);
+    
+    Init_KBD();
+    
     
     memset(&window_settings, 0, sizeof(window_settings));
     window_settings.height    = 480;
@@ -320,6 +334,7 @@ void VID_Init(unsigned char *palette)
     glfwSetKeyCallback(window, key_callback);
     glfwSetWindowSizeCallback(window, size_callback);
     glfwSetCursorPosCallback(window, cursor_callback);
+    glfwSetMouseButtonCallback(window, click_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     
 	GL_Init();
