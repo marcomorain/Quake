@@ -18,6 +18,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 #include "quakedef.h"
+#include "assert.h"
 
 /*
 
@@ -598,6 +599,7 @@ Should NOT be called during an interrupt!
 */
 void Key_Event (int key, qboolean down)
 {
+    assert(key < 256);
 	char	*kb;
 	char	cmd[1024];
 

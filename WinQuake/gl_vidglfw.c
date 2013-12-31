@@ -10,7 +10,8 @@ int		texture_mode = GL_LINEAR;
 const char *gl_renderer = "none";
 qboolean isPermedia = false;
 qboolean gl_mtexable = false;
-cvar_t	gl_ztrick = {"gl_ztrick","1"};
+cvar_t gl_ztrick        = {"gl_ztrick","1"};
+static cvar_t m_filter  = {"m_filter", "0"};
 
 const char *gl_vendor;
 const char *gl_renderer;
@@ -22,9 +23,16 @@ unsigned char	d_15to8table[65536];
 
 static GLFWwindow* window = NULL;
 
+struct pos {
+    double x;
+    double y;
+};
+
 struct {
     int width;
     int height;
+    struct pos mouse_delta;
+    struct pos mouse;
 } window_settings;
 
 void D_BeginDirectRect (int x, int y, byte *pbitmap, int width, int height)
@@ -185,43 +193,47 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
         KEY(GLFW_KEY_SPACE, K_SPACE);
         KEY(GLFW_KEY_BACKSPACE, K_BACKSPACE);
         
-        KEY(GLFW_KEY_UP, K_UPARROW);
-        KEY(GLFW_KEY_DOWN, K_DOWNARROW);
-        KEY(GLFW_KEY_LEFT, K_LEFTARROW);
-        KEY(GLFW_KEY_RIGHT, K_RIGHTARROW);
+        KEY(GLFW_KEY_UP,            K_UPARROW);
+        KEY(GLFW_KEY_DOWN,          K_DOWNARROW);
+        KEY(GLFW_KEY_LEFT,          K_LEFTARROW);
+        KEY(GLFW_KEY_RIGHT,         K_RIGHTARROW);
+        KEY(GLFW_KEY_RIGHT_ALT,     K_ALT);
+        KEY(GLFW_KEY_LEFT_ALT,      K_ALT);
+        KEY(GLFW_KEY_RIGHT_CONTROL, K_CTRL);
+        KEY(GLFW_KEY_LEFT_CONTROL,  K_CTRL);
+        KEY(GLFW_KEY_RIGHT_SHIFT,   K_SHIFT);
+        KEY(GLFW_KEY_LEFT_SHIFT,    K_SHIFT);
+        KEY(GLFW_KEY_F1, K_F1);
+        KEY(GLFW_KEY_F2, K_F2);
+        KEY(GLFW_KEY_F3, K_F3);
+        KEY(GLFW_KEY_F4, K_F4);
+        KEY(GLFW_KEY_F5, K_F5);
+        KEY(GLFW_KEY_F6, K_F6);
+        KEY(GLFW_KEY_F7, K_F7);
+        KEY(GLFW_KEY_F8, K_F8);
+        KEY(GLFW_KEY_F9, K_F9);
+        KEY(GLFW_KEY_F10, K_F10);
+        KEY(GLFW_KEY_F11, K_F11);
+        KEY(GLFW_KEY_F12, K_F12);
+        KEY(GLFW_KEY_INSERT, K_INS);
+        KEY(GLFW_KEY_DELETE, K_DEL);
+        KEY(GLFW_KEY_PAGE_DOWN, K_PGDN);
+        KEY(GLFW_KEY_PAGE_UP, K_PGUP);
+        KEY(GLFW_KEY_HOME, K_HOME);
+        KEY(GLFW_KEY_END, K_END);
+        KEY(GLFW_KEY_PAUSE, K_PAUSE);
+        
+            KEY(161, 126); // ~
             
         default:
             Con_Printf("key %d\n", key);
             break;
-/*
-#define	K_ALT			132
-#define	K_CTRL			133
-#define	K_SHIFT			134
-#define	K_F1			135
-#define	K_F2			136
-#define	K_F3			137
-#define	K_F4			138
-#define	K_F5			139
-#define	K_F6			140
-#define	K_F7			141
-#define	K_F8			142
-#define	K_F9			143
-#define	K_F10			144
-#define	K_F11			145
-#define	K_F12			146
-#define	K_INS			147
-#define	K_DEL			148
-#define	K_PGDN			149
-#define	K_PGUP			150
-#define	K_HOME			151
-#define	K_END			152
-            
-#define K_PAUSE			255
- 
- */
     }
     
-    Key_Event(key, action == GLFW_PRESS);
+    if (key < 256)
+    {
+        Key_Event(key, action == GLFW_PRESS);
+    }
 }
 
 static void size_callback(GLFWwindow* window, int w, int h)
@@ -233,11 +245,23 @@ static void size_callback(GLFWwindow* window, int w, int h)
     vid.recalc_refdef = 1;
 }
 
+static void cursor_callback(GLFWwindow* window, double x, double y)
+{
+    window_settings.mouse_delta.x += (x - window_settings.mouse.x);
+    window_settings.mouse_delta.y += (y - window_settings.mouse.y);
+    window_settings.mouse.x = x;
+    window_settings.mouse.y = y;
+}
+
+
 void VID_Init(unsigned char *palette)
 {
+    Cvar_RegisterVariable (&m_filter);
+	Cvar_RegisterVariable (&gl_ztrick);
     
-    window_settings.height = 480;
-    window_settings.width  = 640;
+    memset(&window_settings, 0, sizeof(window_settings));
+    window_settings.height    = 480;
+    window_settings.width     = 640;
 
     char	gldir[MAX_OSPATH];
     
@@ -295,14 +319,14 @@ void VID_Init(unsigned char *palette)
     glfwMakeContextCurrent(window);
     glfwSetKeyCallback(window, key_callback);
     glfwSetWindowSizeCallback(window, size_callback);
+    glfwSetCursorPosCallback(window, cursor_callback);
     
 	GL_Init();
     
     sprintf (gldir, "%s/glquake", com_gamedir);
 	Sys_mkdir (gldir);
     
-    
-//	Check_Gamma(palette);
+    //	Check_Gamma(palette);
 	VID_SetPalette(palette);
     
 	// Check for 3DFX Extensions and initialize them.
@@ -339,6 +363,59 @@ void Sys_SendKeyEvents (void)
     }
 }
 
+/*
+ ===========
+ IN_Move
+ ===========
+ */
+void IN_MouseMove (usercmd_t *cmd)
+{
+    double x = window_settings.mouse_delta.x;
+    double y = window_settings.mouse_delta.y;
+    
+	if (m_filter.value)
+	{
+        x *= 0.5;
+        y *= 0.5;
+	}
+    
+    window_settings.mouse_delta.x = 0;
+    window_settings.mouse_delta.y = 0;
+
+    window_settings.mouse.x = window_settings.width  / 2.0;
+    window_settings.mouse.y = window_settings.height / 2.0;
+    glfwSetCursorPos(window, window_settings.mouse.x, window_settings.mouse.y);
+    
+    x *= sensitivity.value;
+	y *= sensitivity.value;
+    
+    // add mouse X/Y movement to cmd
+	if ( (in_strafe.state & 1) || (lookstrafe.value && (in_mlook.state & 1) ))
+		cmd->sidemove += m_side.value * x;
+	else
+		cl.viewangles[YAW] -= m_yaw.value * x;
+	
+	if (in_mlook.state & 1)
+		V_StopPitchDrift ();
+    
+	if ( (in_mlook.state & 1) && !(in_strafe.state & 1))
+	{
+		cl.viewangles[PITCH] += m_pitch.value * y;
+		if (cl.viewangles[PITCH] > 80)
+			cl.viewangles[PITCH] = 80;
+		if (cl.viewangles[PITCH] < -70)
+			cl.viewangles[PITCH] = -70;
+	}
+	else
+	{
+		if ((in_strafe.state & 1) && noclip_anglehack)
+			cmd->upmove -= m_forward.value * y;
+		else
+			cmd->forwardmove -= m_forward.value * y;
+	}
+}
+
 void IN_Move (usercmd_t *cmd)
 {
+	IN_MouseMove(cmd);
 }
