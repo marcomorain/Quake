@@ -275,6 +275,9 @@ void VID_Init(unsigned char *palette)
     memset(&window_settings, 0, sizeof(window_settings));
     window_settings.height    = 480;
     window_settings.width     = 640;
+    
+    window_settings.height    = 1024/2;
+    window_settings.width     = 1280/2;
 
     char	gldir[MAX_OSPATH];
     
@@ -313,8 +316,8 @@ void VID_Init(unsigned char *palette)
 		vid.conheight = vid.height;
 	if (vid.conwidth > vid.width)
 		vid.conwidth = vid.width;
-	vid.width = vid.conwidth;
-	vid.height = vid.conheight;
+	//vid.width = vid.conwidth;
+	//vid.height = vid.conheight;
     
 	vid.aspect = ((float)vid.height / (float)vid.width) * (320.0 / 240.0);
 	vid.numpages = 2;
