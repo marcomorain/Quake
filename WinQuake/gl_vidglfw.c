@@ -48,7 +48,7 @@ void D_EndDirectRect (int x, int y, int width, int height)
 
 void VID_Shutdown(void)
 {
-    Con_Print("Shutting down GLFW\n");
+    Con_SafePrintf("Shutting down GLFW\n");
     glfwTerminate();
 }
 
@@ -263,6 +263,12 @@ static void click_callback(GLFWwindow* window, int button, int action, int mods)
     Key_Event(glfw_to_quake_keys[button], action == GLFW_PRESS);
 }
 
+static void scroll_callback(GLFWwindow* window, double x, double y)
+{
+    const int key = y > 0 ? K_MWHEELUP : K_MWHEELDOWN;
+    Key_Event(key, true);
+    Key_Event(key, false);
+}
 
 void VID_Init(unsigned char *palette)
 {
@@ -273,11 +279,10 @@ void VID_Init(unsigned char *palette)
     
     
     memset(&window_settings, 0, sizeof(window_settings));
-    window_settings.height    = 480;
-    window_settings.width     = 640;
+
     
-    window_settings.height    = 1024/2;
-    window_settings.width     = 1280/2;
+    window_settings.height    = 1024;
+    window_settings.width     = 1280;
 
     char	gldir[MAX_OSPATH];
     
@@ -316,8 +321,6 @@ void VID_Init(unsigned char *palette)
 		vid.conheight = vid.height;
 	if (vid.conwidth > vid.width)
 		vid.conwidth = vid.width;
-	//vid.width = vid.conwidth;
-	//vid.height = vid.conheight;
     
 	vid.aspect = ((float)vid.height / (float)vid.width) * (320.0 / 240.0);
 	vid.numpages = 2;
@@ -337,6 +340,7 @@ void VID_Init(unsigned char *palette)
     glfwSetWindowSizeCallback(window, size_callback);
     glfwSetCursorPosCallback(window, cursor_callback);
     glfwSetMouseButtonCallback(window, click_callback);
+    glfwSetScrollCallback(window, scroll_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     
 	GL_Init();
