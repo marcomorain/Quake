@@ -341,7 +341,6 @@ void VID_Init(unsigned char *palette)
     glfwSetCursorPosCallback(window, cursor_callback);
     glfwSetMouseButtonCallback(window, click_callback);
     glfwSetScrollCallback(window, scroll_callback);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     
 	GL_Init();
     
@@ -373,6 +372,8 @@ void IN_Commands (void)
 {
 }
 
+
+static int old_m_state = -1;
 void Sys_SendKeyEvents (void)
 {
     glfwPollEvents();
@@ -383,6 +384,18 @@ void Sys_SendKeyEvents (void)
         glfwTerminate();
         Sys_Quit();
     }
+
+    extern int m_state;
+
+    //if (m_state != old_m_state) {
+
+        if (m_state) {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        } else {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        }
+        old_m_state = m_state;
+    //}
 }
 
 /*
@@ -404,10 +417,10 @@ void IN_MouseMove (usercmd_t *cmd)
     window_settings.mouse_delta.x = 0;
     window_settings.mouse_delta.y = 0;
 
-    if (1) {
+    if (!old_m_state) {
         window_settings.mouse.x = window_settings.width  / 2.0;
         window_settings.mouse.y = window_settings.height / 2.0;
-        glfwSetCursorPos(window, window_settings.mouse.x, window_settings.mouse.y);\
+        glfwSetCursorPos(window, window_settings.mouse.x, window_settings.mouse.y);
     }
     
     x *= sensitivity.value;

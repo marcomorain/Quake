@@ -7,8 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		49FA5CAB1876C779007C0DDE /* snd_openal.c in Sources */ = {isa = PBXBuildFile; fileRef = 49FA5CAA1876C779007C0DDE /* snd_openal.c */; };
+		49FA5CAD1876C878007C0DDE /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49FA5CAC1876C878007C0DDE /* OpenAL.framework */; };
 		8F9898D718704F81003F5893 /* osx.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8F9898D618704F81003F5893 /* osx.1 */; };
-		8F98990818705138003F5893 /* snd_null.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F9898E518705138003F5893 /* snd_null.c */; };
 		8F98990B18705138003F5893 /* sv_main.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F9898E818705138003F5893 /* sv_main.c */; };
 		8F98990C18705138003F5893 /* sv_move.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F9898E918705138003F5893 /* sv_move.c */; };
 		8F98990D18705138003F5893 /* sv_phys.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F9898EA18705138003F5893 /* sv_phys.c */; };
@@ -77,6 +78,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		49FA5CAA1876C779007C0DDE /* snd_openal.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = snd_openal.c; path = ../snd_openal.c; sourceTree = "<group>"; };
+		49FA5CAC1876C878007C0DDE /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
 		8F9898D118704F81003F5893 /* osx */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = osx; sourceTree = BUILT_PRODUCTS_DIR; };
 		8F9898D618704F81003F5893 /* osx.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = osx.1; sourceTree = "<group>"; };
 		8F9898DD18705138003F5893 /* screen.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = screen.c; path = ../screen.c; sourceTree = "<group>"; };
@@ -285,6 +288,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49FA5CAD1876C878007C0DDE /* OpenAL.framework in Frameworks */,
 				8F989A3E1870868C003F5893 /* libglfw3.dylib in Frameworks */,
 				8F989A3B18706842003F5893 /* OpenGL.framework in Frameworks */,
 			);
@@ -296,6 +300,7 @@
 		8F9898C818704F81003F5893 = {
 			isa = PBXGroup;
 			children = (
+				49FA5CAC1876C878007C0DDE /* OpenAL.framework */,
 				8F989A3D1870868C003F5893 /* libglfw3.dylib */,
 				8F989A3A18706842003F5893 /* OpenGL.framework */,
 				8F9899F418705AAD003F5893 /* adivtab.h */,
@@ -552,6 +557,7 @@
 		8F9899EF18705380003F5893 /* snd */ = {
 			isa = PBXGroup;
 			children = (
+				49FA5CAA1876C779007C0DDE /* snd_openal.c */,
 				8F9899E1187052ED003F5893 /* snd_dos.c */,
 				8F9898DE18705138003F5893 /* snd_dma.c */,
 				8F9898E018705138003F5893 /* snd_gus.c */,
@@ -705,7 +711,7 @@
 				8F98998E18705244003F5893 /* cvar.c in Sources */,
 				8F9899C218705244003F5893 /* net_udp.c in Sources */,
 				8F98990C18705138003F5893 /* sv_move.c in Sources */,
-				8F98990818705138003F5893 /* snd_null.c in Sources */,
+				49FA5CAB1876C779007C0DDE /* snd_openal.c in Sources */,
 				8F989A401870A096003F5893 /* sys_bsd.c in Sources */,
 				8F98992218705138003F5893 /* zone.c in Sources */,
 				8F9899AB18705244003F5893 /* host_cmd.c in Sources */,
@@ -839,6 +845,7 @@
 				8F9898DC18704F81003F5893 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
