@@ -63,11 +63,9 @@ void	VID_SetPalette (unsigned char *palette)
 	unsigned r,g,b;
 	unsigned v;
 	int     r1,g1,b1;
-	int		j,k,l,m;
+	int		k;
 	unsigned short i;
 	unsigned	*table;
-	FILE *f;
-	char s[255];
 	int dist, bestdist;
     
     //
@@ -112,16 +110,19 @@ void	VID_SetPalette (unsigned char *palette)
 	}
 }
 
+const char* get_string(GLenum name){
+    return (const char*)glGetString(name);
+}
+
 void GL_Init (void)
 {
-    gl_vendor = glGetString (GL_VENDOR);
-	Con_Printf ("GL_VENDOR: %s\n", gl_vendor);
-	gl_renderer = glGetString (GL_RENDERER);
-	Con_Printf ("GL_RENDERER: %s\n", gl_renderer);
-    
-	gl_version = glGetString (GL_VERSION);
-	Con_Printf ("GL_VERSION: %s\n", gl_version);
-	gl_extensions = glGetString (GL_EXTENSIONS);
+    gl_vendor     = get_string(GL_VENDOR);
+	gl_renderer   = get_string(GL_RENDERER);
+	gl_version    = get_string(GL_VERSION);
+	gl_extensions = get_string(GL_EXTENSIONS);
+    Con_Printf ("GL_VENDOR:     %s\n", gl_vendor);
+	Con_Printf ("GL_RENDERER:   %s\n", gl_renderer);
+	Con_Printf ("GL_VERSION:    %s\n", gl_version);
 	Con_Printf ("GL_EXTENSIONS: %s\n", gl_extensions);
     
     //	Con_Printf ("%s %s\n", gl_renderer, gl_version);
@@ -281,8 +282,8 @@ void VID_Init(unsigned char *palette)
     memset(&window_settings, 0, sizeof(window_settings));
 
     
-    window_settings.height    = 1024;
-    window_settings.width     = 1280;
+    window_settings.height    = 240; //1024;
+    window_settings.width     = 320; // 1280;
 
     char	gldir[MAX_OSPATH];
     

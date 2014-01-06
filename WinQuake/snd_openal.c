@@ -28,7 +28,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 enum {
     NUM_BUFFERS = MAX_CHANNELS
 };
-static ALCdevice* device = 0;
+static ALCdevice*  device  = 0;
+static ALCcontext* context = 0;
+
 static ALuint buffers[NUM_BUFFERS];
 static qboolean	snd_ambient = 1;
 
@@ -39,7 +41,7 @@ static void check_error() {
     int error = alGetError();
 
     if (error != AL_NO_ERROR) {
-        Con_Printf("OpenAL Error: %d\n", error);
+        Con_Printf("OpenAL Error: %x %s\n", error, alGetString(error));
         assert(0);
     }
 }
@@ -47,10 +49,21 @@ static void check_error() {
 void S_Init (void)
 {
     device = alcOpenDevice(NULL);
+
+
     check_error();
     if (!device) {
         Con_SafePrintf("Error opening OpenAL device.\n");
     }
+
+    Con_Printf("OpenAL initialised: %s\n", alGetString(AL_VERSION));
+    Con_Printf("OpenAL Renderer:    %s\n", alGetString(AL_RENDERER));
+    Con_Printf("OpenAL Extenstions: %s\n", alGetString(AL_EXTENSIONS));
+
+    context = alcCreateContext(device, NULL);
+    check_error();
+
+    alcMakeContextCurrent(context);
 
     alGenBuffers(NUM_BUFFERS, buffers);
     check_error();
@@ -68,6 +81,12 @@ void S_AmbientOn (void)
 
 void S_Shutdown (void)
 {
+    alcMakeContextCurrent(NULL);
+    alDeleteBuffers(NUM_BUFFERS, buffers);
+    alcDestroyContext(context);
+    alcCloseDevice(device);
+    context = 0;
+    device  = 0;
 }
 
 void S_TouchSound (char *sample)
