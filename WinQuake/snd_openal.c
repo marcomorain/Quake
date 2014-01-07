@@ -26,13 +26,24 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "assert.h"
 
 enum {
-    NUM_BUFFERS = MAX_CHANNELS
+    MAX_SFX = 512,
 };
-static ALCdevice*  device  = 0;
-static ALCcontext* context = 0;
 
-static ALuint buffers[NUM_BUFFERS];
+struct ALSound {
+    ALuint buffer;
+    sfx_t data;
+};
+
+struct Sound {
+    ALCdevice*  device;
+    ALCcontext* context;
+    int		    num_sfx;
+    struct ALSound known_sfx[MAX_SFX];
+    struct ALSound ambient_sfx[NUM_AMBIENTS];
+};
+
 static qboolean	snd_ambient = 1;
+static struct Sound sound = {};
 
 cvar_t bgmvolume  = {"bgmvolume",  "1", true};
 cvar_t volume     = {"volume",     "0.7", true};
@@ -58,11 +69,11 @@ void S_Init (void)
     Cvar_RegisterVariable(&precache);
     Cvar_RegisterVariable(&loadas8bit);
     
-    device = alcOpenDevice(NULL);
+    sound.device = alcOpenDevice(NULL);
 
 
     check_error();
-    if (!device) {
+    if (!sound.device) {
         Con_SafePrintf("Error opening OpenAL device.\n");
     }
 
@@ -70,33 +81,12 @@ void S_Init (void)
     Con_Printf("OpenAL Renderer:    %s\n", alGetString(AL_RENDERER));
     Con_Printf("OpenAL Extenstions: %s\n", alGetString(AL_EXTENSIONS));
 
-    context = alcCreateContext(device, NULL);
+    sound.context = alcCreateContext(sound.device, NULL);
     check_error();
 
-    alcMakeContextCurrent(context);
+    alcMakeContextCurrent(sound.context);
 
-    alGenBuffers(NUM_BUFFERS, buffers);
-    check_error();
-    
-    sfx_t* sound = Hunk_AllocName(1 * sizeof(sfx_t), "sfx_tmp");
-    Q_strcpy(sound->name, "misc/menu2.wav");
-    S_LoadSound(sound);
-    
-    ALuint source;
-    alGenSources(1, &source);
-    check_error();
-    
-    int format = AL_FORMAT_MONO16;
-    
-    sfxcache_t* s = sound->cache.data;
-    
-    alBufferData(buffers[0], format, s->data, s->length, 11025);
-    check_error();
-    
-    alSourceQueueBuffers(source, 1, buffers);
-    check_error();
-    alSourcePlay(source);
-    check_error();
+	sound.num_sfx = 0;
 }
 
 void S_AmbientOff (void)
@@ -112,11 +102,11 @@ void S_AmbientOn (void)
 void S_Shutdown (void)
 {
     alcMakeContextCurrent(NULL);
-    alDeleteBuffers(NUM_BUFFERS, buffers);
-    alcDestroyContext(context);
-    alcCloseDevice(device);
-    context = 0;
-    device  = 0;
+    // TODO:
+    // alDeleteBuffers();
+    alcDestroyContext(sound.context);
+    alcCloseDevice(sound.device);
+    memset(&sound, 0, sizeof(struct Sound));
 }
 
 void S_TouchSound (char *sample)
@@ -133,10 +123,48 @@ void S_StaticSound (sfx_t *sfx, vec3_t origin, float vol, float attenuation)
 
 void S_StartSound (int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float fvol,  float attenuation)
 {
+
+    char* buffer_x = sfx;
+    buffer_x -= 4;
+    ALuint buffer = *buffer_x;
+
+
+    ALuint source;
+    alGenSources(1, &source);
+    check_error();
+    alSourceQueueBuffers(source, 1, &buffer);
+    check_error();
+    alSourcePlay(source);
+    check_error();
 }
 
 void S_StopSound (int entnum, int entchannel)
 {
+}
+
+struct ALSound* S_FindName (struct Sound* s, char *name) {
+
+	if (!name)
+        Sys_Error ("S_FindName: NULL\n");
+
+	if (Q_strlen(name) >= MAX_QPATH)
+        Sys_Error ("Sound name too long: %s", name);
+
+    // see if already loaded
+    int i;
+	for (i=0 ; i < s->num_sfx ; i++)
+		if (!Q_strcmp(s->known_sfx[i].data.name, name))
+			return &s->known_sfx[i];
+
+	if (s->num_sfx == MAX_SFX)
+		Sys_Error ("S_FindName: out of sfx_t");
+
+    // Not found - set the filename and return
+    // some memory to load the sound into.
+    struct ALSound* result = &s->known_sfx[i];
+	strcpy(result->data.name, name);
+	s->num_sfx++;
+	return result;
 }
 
 /*
@@ -147,7 +175,23 @@ void S_StopSound (int entnum, int entchannel)
  */
 sfx_t *S_PrecacheSound (char *name)
 {
-    return NULL;
+    assert(sound.device && sound.context);
+
+    struct ALSound* result = S_FindName(&sound, name);
+    if (precache.value) {
+        S_LoadSound(&result->data);
+
+        const int format = AL_FORMAT_MONO16;
+
+        sfxcache_t* cached = result->data.cache.data;
+
+        alGenBuffers(1, &result->buffer);
+        check_error();
+
+        alBufferData(result->buffer, format, cached->data, cached->length, 11025);
+        check_error();
+    }
+    return &result->data;
 }
 
 void S_ClearPrecache (void)
