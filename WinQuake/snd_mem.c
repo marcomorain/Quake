@@ -21,6 +21,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 
+struct Todo {
+    int speed;
+};
+
+static struct Todo data = {11025};
+struct Todo* shm = &data;
+
+
+
 byte *S_Alloc (int size);
 
 /*

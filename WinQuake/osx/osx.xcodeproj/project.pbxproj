@@ -62,6 +62,7 @@
 		8F989A3C18706878003F5893 /* r_part.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F98997918705244003F5893 /* r_part.c */; };
 		8F989A3E1870868C003F5893 /* libglfw3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8F989A3D1870868C003F5893 /* libglfw3.dylib */; };
 		8F989A401870A096003F5893 /* sys_bsd.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F989A3F1870A096003F5893 /* sys_bsd.c */; };
+		8FB0B68C187B77E700677F13 /* snd_mem.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F9898E218705138003F5893 /* snd_mem.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -321,8 +322,6 @@
 				8F989A0318705AAD003F5893 /* cvar.h */,
 				8F989A0718705AAD003F5893 /* dosisms.h */,
 				8F989A0818705AAD003F5893 /* draw.h */,
-				8F989A0B18705AAD003F5893 /* glquake.h */,
-				8F989A0C18705AAD003F5893 /* glquake2.h */,
 				8F989A0D18705AAD003F5893 /* input.h */,
 				8F989A0E18705AAD003F5893 /* keys.h */,
 				8F989A0F18705AAD003F5893 /* mathlib.h */,
@@ -336,8 +335,6 @@
 				8F989A2218705AAD003F5893 /* protocol.h */,
 				8F989A2318705AAD003F5893 /* quakeasm.h */,
 				8F989A2418705AAD003F5893 /* quakedef.h */,
-				8F989A2518705AAD003F5893 /* r_local.h */,
-				8F989A2618705AAD003F5893 /* r_shared.h */,
 				8F989A2718705AAD003F5893 /* render.h */,
 				8F989A2818705AAD003F5893 /* resource.h */,
 				8F989A2918705AAD003F5893 /* sbar.h */,
@@ -347,8 +344,6 @@
 				8F989A2D18705AAD003F5893 /* spritegn.h */,
 				8F989A2E18705AAD003F5893 /* sys.h */,
 				8F989A2F18705AAD003F5893 /* vgamodes.h */,
-				8F989A3018705AAD003F5893 /* vid_dos.h */,
-				8F989A3118705AAD003F5893 /* vid.h */,
 				8F989A3218705AAD003F5893 /* view.h */,
 				8F989A3318705AAD003F5893 /* vregset.h */,
 				8F989A3418705AAD003F5893 /* wad.h */,
@@ -416,6 +411,8 @@
 		8F9899DC1870529A003F5893 /* gl */ = {
 			isa = PBXGroup;
 			children = (
+				8F989A0B18705AAD003F5893 /* glquake.h */,
+				8F989A0C18705AAD003F5893 /* glquake2.h */,
 				8F989A381870669E003F5893 /* gl_vidglfw.c */,
 				8F989A0918705AAD003F5893 /* gl_model.h */,
 				8F989A0A18705AAD003F5893 /* gl_warp_sin.h */,
@@ -520,6 +517,8 @@
 		8F9899ED1870533A003F5893 /* r */ = {
 			isa = PBXGroup;
 			children = (
+				8F989A2518705AAD003F5893 /* r_local.h */,
+				8F989A2618705AAD003F5893 /* r_shared.h */,
 				8F98997018705244003F5893 /* r_aclip.c */,
 				8F98997118705244003F5893 /* r_alias.c */,
 				8F98997218705244003F5893 /* r_bsp.c */,
@@ -541,6 +540,8 @@
 		8F9899EE1870535B003F5893 /* vid */ = {
 			isa = PBXGroup;
 			children = (
+				8F989A3018705AAD003F5893 /* vid_dos.h */,
+				8F989A3118705AAD003F5893 /* vid.h */,
 				8F9898F218705138003F5893 /* vid_dos.c */,
 				8F9898F318705138003F5893 /* vid_ext.c */,
 				8F9898F418705138003F5893 /* vid_null.c */,
@@ -668,6 +669,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8FB0B68C187B77E700677F13 /* snd_mem.c in Sources */,
 				8F989A3C18706878003F5893 /* r_part.c in Sources */,
 				8F9899C718705244003F5893 /* net_wso.c in Sources */,
 				8F98992018705138003F5893 /* wad.c in Sources */,

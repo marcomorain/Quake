@@ -34,8 +34,11 @@ static ALCcontext* context = 0;
 static ALuint buffers[NUM_BUFFERS];
 static qboolean	snd_ambient = 1;
 
-cvar_t bgmvolume = {"bgmvolume",   "1", true};
-cvar_t volume    = {"volume",    "0.7", true};
+cvar_t bgmvolume  = {"bgmvolume",  "1", true};
+cvar_t volume     = {"volume",     "0.7", true};
+cvar_t nosound    = {"nosound",    "0"};
+cvar_t precache   = {"precache",   "1"};
+cvar_t loadas8bit = {"loadas8bit", "0"};
 
 static void check_error() {
     int error = alGetError();
@@ -48,6 +51,13 @@ static void check_error() {
 
 void S_Init (void)
 {
+    
+    Cvar_RegisterVariable(&nosound);
+    Cvar_RegisterVariable(&volume);
+    Cvar_RegisterVariable(&bgmvolume);
+    Cvar_RegisterVariable(&precache);
+    Cvar_RegisterVariable(&loadas8bit);
+    
     device = alcOpenDevice(NULL);
 
 
@@ -66,6 +76,26 @@ void S_Init (void)
     alcMakeContextCurrent(context);
 
     alGenBuffers(NUM_BUFFERS, buffers);
+    check_error();
+    
+    sfx_t* sound = Hunk_AllocName(1 * sizeof(sfx_t), "sfx_tmp");
+    Q_strcpy(sound->name, "misc/menu2.wav");
+    S_LoadSound(sound);
+    
+    ALuint source;
+    alGenSources(1, &source);
+    check_error();
+    
+    int format = AL_FORMAT_MONO16;
+    
+    sfxcache_t* s = sound->cache.data;
+    
+    alBufferData(buffers[0], format, s->data, s->length, 11025);
+    check_error();
+    
+    alSourceQueueBuffers(source, 1, buffers);
+    check_error();
+    alSourcePlay(source);
     check_error();
 }
 
@@ -109,9 +139,15 @@ void S_StopSound (int entnum, int entchannel)
 {
 }
 
-sfx_t *S_PrecacheSound (char *sample)
+/*
+ ==================
+ S_PrecacheSound
+ 
+ ==================
+ */
+sfx_t *S_PrecacheSound (char *name)
 {
-	return NULL;
+    return NULL;
 }
 
 void S_ClearPrecache (void)
