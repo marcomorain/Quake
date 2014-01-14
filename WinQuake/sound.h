@@ -36,6 +36,7 @@ typedef struct sfx_s
 {
 	char 	name[MAX_QPATH];
 	cache_user_t	cache;
+    unsigned int buffer;
 } sfx_t;
 
 // !!! if this is changed, it much be changed in asm_i386.h too !!!

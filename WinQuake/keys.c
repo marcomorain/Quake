@@ -600,7 +600,8 @@ Should NOT be called during an interrupt!
 void Key_Event (int key, qboolean down)
 {
     assert(key < 256);
-    assert(key);
+    if (key == 0) return;
+    
 	char	*kb;
 	char	cmd[1024];
 

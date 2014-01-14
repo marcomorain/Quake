@@ -29,17 +29,12 @@ enum {
     MAX_SFX = 512,
 };
 
-struct ALSound {
-    ALuint buffer;
-    sfx_t data;
-};
-
 struct Sound {
     ALCdevice*  device;
     ALCcontext* context;
     int		    num_sfx;
-    struct ALSound known_sfx[MAX_SFX];
-    struct ALSound ambient_sfx[NUM_AMBIENTS];
+    sfx_t known_sfx[MAX_SFX];
+    sfx_t ambient_sfx[NUM_AMBIENTS];
 };
 
 static qboolean	snd_ambient = 1;
@@ -117,32 +112,34 @@ void S_ClearBuffer (void)
 {
 }
 
+static void play(sfx_t* s, float vol)
+{
+    ALuint source[1];
+    alGenSources(1, source);
+    check_error();
+    alSourceQueueBuffers(source[0], 1, &s->buffer);
+    check_error();
+    alSourcef(source[0], AL_GAIN, vol);
+    alSourcePlay(source[0]);
+    check_error();
+
+}
+
 void S_StaticSound (sfx_t *sfx, vec3_t origin, float vol, float attenuation)
 {
+  //  play(sfx, vol);
 }
 
 void S_StartSound (int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float fvol,  float attenuation)
 {
-
-    char* buffer_x = sfx;
-    buffer_x -= 4;
-    ALuint buffer = *buffer_x;
-
-
-    ALuint source;
-    alGenSources(1, &source);
-    check_error();
-    alSourceQueueBuffers(source, 1, &buffer);
-    check_error();
-    alSourcePlay(source);
-    check_error();
+    play(sfx, fvol);
 }
 
 void S_StopSound (int entnum, int entchannel)
 {
 }
 
-struct ALSound* S_FindName (struct Sound* s, char *name) {
+sfx_t* S_FindName (struct Sound* s, char *name) {
 
 	if (!name)
         Sys_Error ("S_FindName: NULL\n");
@@ -153,7 +150,7 @@ struct ALSound* S_FindName (struct Sound* s, char *name) {
     // see if already loaded
     int i;
 	for (i=0 ; i < s->num_sfx ; i++)
-		if (!Q_strcmp(s->known_sfx[i].data.name, name))
+		if (!Q_strcmp(s->known_sfx[i].name, name))
 			return &s->known_sfx[i];
 
 	if (s->num_sfx == MAX_SFX)
@@ -161,10 +158,28 @@ struct ALSound* S_FindName (struct Sound* s, char *name) {
 
     // Not found - set the filename and return
     // some memory to load the sound into.
-    struct ALSound* result = &s->known_sfx[i];
-	strcpy(result->data.name, name);
+    sfx_t* result = s->known_sfx + i;
+	strcpy(result->name, name);
 	s->num_sfx++;
 	return result;
+}
+
+
+static void load(const char* name, sfx_t* dest)
+{
+    S_LoadSound(dest);
+
+    const int format = AL_FORMAT_MONO16;
+    sfxcache_t* cached = dest->cache.data;
+
+    ALuint buffer = 0;
+    alGenBuffers(1, &buffer);
+
+    check_error();
+    //Con_Printf("Sound buffer %d assigned to sound %s", buffer, name);
+    dest->buffer = buffer;
+    alBufferData(buffer, format, cached->data, cached->length, 11025/2);
+    check_error();
 }
 
 /*
@@ -177,21 +192,11 @@ sfx_t *S_PrecacheSound (char *name)
 {
     assert(sound.device && sound.context);
 
-    struct ALSound* result = S_FindName(&sound, name);
+    sfx_t* result = S_FindName(&sound, name);
     if (precache.value) {
-        S_LoadSound(&result->data);
-
-        const int format = AL_FORMAT_MONO16;
-
-        sfxcache_t* cached = result->data.cache.data;
-
-        alGenBuffers(1, &result->buffer);
-        check_error();
-
-        alBufferData(result->buffer, format, cached->data, cached->length, 11025);
-        check_error();
+        load(name, result);
     }
-    return &result->data;
+    return result;
 }
 
 void S_ClearPrecache (void)
@@ -205,12 +210,19 @@ void S_Update (vec3_t origin, vec3_t v_forward, vec3_t v_right, vec3_t v_up)
         orientation[i]   = v_forward[i];
         orientation[i+3] = v_up[i];
     }
-    alListenerfv(AL_POSITION,    origin);
-    alListenerfv(AL_ORIENTATION, orientation);
+    //alListenerfv(AL_POSITION,    origin);
+    //alListenerfv(AL_ORIENTATION, orientation);
 }
 
 void S_StopAllSounds (qboolean clear)
 {
+    for (int i=0; i<sound.num_sfx; i++) {
+        sfx_t* sfx = sound.known_sfx + i;
+        alDeleteBuffers(1, &sfx->buffer);
+        check_error();
+        sfx->buffer = 0;
+    }
+    sound.num_sfx = 0;
 }
 
 void S_BeginPrecaching (void)
@@ -227,5 +239,10 @@ void S_ExtraUpdate (void)
 
 void S_LocalSound (char *s)
 {
+    sfx_t* sfx = S_FindName(&sound, s);
+    if (sfx->buffer == 0) {
+        load(s, sfx);
+    }
+    play(sfx, 1);
 }
 
