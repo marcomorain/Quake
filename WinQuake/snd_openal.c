@@ -38,7 +38,7 @@ struct Sound {
 };
 
 // From SND DMA
-channel_t   channels[MAX_CHANNELS]; // TODO: heap allocate?
+channel_t   channels[MAX_CHANNELS] = {}; // TODO: heap allocate?
 int total_channels;
 vec_t		sound_nominal_clip_dist=1000.0;
 int   		paintedtime; 	// sample PAIRS
@@ -61,7 +61,7 @@ static void check_error() {
 
     if (error != AL_NO_ERROR) {
         Con_Printf("OpenAL Error (%x) %s\n", error, alGetString(error));
-        assert(0);
+        //assert(0);
     }
 }
 
@@ -134,9 +134,29 @@ void S_ClearBuffer (void)
 
 static void play(const channel_t* channel, const vec3_t position)
 {
-    alSourceQueueBuffers(channel->openal_source, 1, &channel->sfx->openal_buffer);
+    const int sid = channel->openal_source;
+
+    alSourceStop(sid);
     check_error();
-    alSourcef(channel->openal_source, AL_GAIN, channel->master_vol);
+
+    //alSourceRewind(sid);
+    check_error();
+
+    for (;;) {
+        ALuint processed;
+        alGetSourcei(sid, AL_BUFFERS_PROCESSED, &processed);
+        alSourceUnqueueBuffers(<#ALuint sid#>, <#ALsizei numEntries#>, <#ALuint *bids#>)
+    }
+
+    alSourceUnqueueBuffers(sid, 0, 0);
+
+
+
+
+
+    alSourceQueueBuffers(sid, 1, &channel->sfx->openal_buffer);
+    check_error();
+    alSourcef(sid, AL_GAIN, channel->master_vol/255.0f);
 
     vec3_t position_metric;
     const double i_to_m = 1; //0.0254;
@@ -144,10 +164,11 @@ static void play(const channel_t* channel, const vec3_t position)
         position_metric[i] = position[i] * i_to_m;
     }
 
-    alSourcei(channel->openal_source, AL_SAMPLE_OFFSET, channel->pos);
+   // alSourcei(sid, AL_SAMPLE_OFFSET, channel->pos);
 
-    alSourcefv(channel->openal_source, AL_POSITION, position_metric);
-    alSourcePlay(channel->openal_source);
+    alSourcefv(sid, AL_POSITION, position_metric);
+    check_error();
+    alSourcePlay(sid);
 
     check_error();
 
@@ -160,6 +181,8 @@ S_StaticSound
 */
 void S_StaticSound (sfx_t *sfx, vec3_t origin, float vol, float attenuation)
 {
+    return;
+
 	channel_t	*ss;
 	sfxcache_t		*sc;
 
@@ -196,7 +219,7 @@ void S_StaticSound (sfx_t *sfx, vec3_t origin, float vol, float attenuation)
 
 
 void S_StartSound (int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float fvol,  float attenuation) {
-	sfxcache_t	*sc;
+
 	int		ch_idx;
 	int		skip;
 
@@ -214,11 +237,14 @@ void S_StartSound (int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float 
 
 	const int vol = fvol*255;
 
+
     // pick a channel to play on
     channel_t* target_chan = SND_PickChannel(entnum, entchannel);
 	if (!target_chan) {
 		return;
     }
+
+    printf("playing %s on %d at %d\n", sfx->name, target_chan->openal_source, vol);
 
     const int openal_source = target_chan->openal_source;
 
@@ -236,7 +262,7 @@ void S_StartSound (int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float 
 	//	return;		// not audible at all
 
     // new channel
-	sc = S_LoadSound (sfx);
+    sfxcache_t* sc = S_LoadSound (sfx);
 	if (!sc)
 	{
 		target_chan->sfx = NULL;
@@ -260,8 +286,8 @@ void S_StartSound (int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float 
 			skip = rand () % (int)(0.1*speed);
 			if (skip >= target_chan->end)
 				skip = target_chan->end - 1;
-			target_chan->pos += skip;
-			target_chan->end -= skip;
+			//target_chan->pos += skip;
+			//target_chan->end -= skip;
 			break;
 		}
 
@@ -272,9 +298,7 @@ void S_StartSound (int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float 
 
 void S_StopSound(int entnum, int entchannel)
 {
-	int i;
-
-	for (i=0 ; i<MAX_DYNAMIC_CHANNELS ; i++)
+	for (int i=0 ; i<MAX_DYNAMIC_CHANNELS ; i++)
 	{
 		if (channels[i].entnum == entnum
 			&& channels[i].entchannel == entchannel)
@@ -325,7 +349,7 @@ static void load(const char* name, sfx_t* dest)
     alGenBuffers(1, &buffer);
 
     check_error();
-    //Con_Printf("Sound buffer %d assigned to sound %s", buffer, name);
+    //Con_Printf("Sound buffer %d assigned to sound %s\n", buffer, name);
     dest->openal_buffer = buffer;
     alBufferData(buffer, format, cached->data, cached->length, 11025/2);
     check_error();
@@ -410,7 +434,7 @@ void S_Update (vec3_t origin, vec3_t forward, vec3_t right, vec3_t up)
         orientation[i+3] = up[i];
     }
     alListenerfv(AL_POSITION,    origin);
-    //alListenerfv(AL_ORIENTATION, orientation);
+    alListenerfv(AL_ORIENTATION, orientation);
 }
 
 void S_StopAllSounds (qboolean clear)
