@@ -39,6 +39,7 @@ struct Sound {
 
 // From SND DMA
 channel_t   channels[MAX_CHANNELS]; // TODO: heap allocate?
+int total_channels;
 vec_t		sound_nominal_clip_dist=1000.0;
 int   		paintedtime; 	// sample PAIRS
 vec3_t		listener_origin;
@@ -59,7 +60,7 @@ static void check_error() {
     int error = alGetError();
 
     if (error != AL_NO_ERROR) {
-        Con_Printf("OpenAL Error: %x %s\n", error, alGetString(error));
+        Con_Printf("OpenAL Error (%x) %s\n", error, alGetString(error));
         assert(0);
     }
 }
@@ -143,6 +144,8 @@ static void play(const channel_t* channel, const vec3_t position)
         position_metric[i] = position[i] * i_to_m;
     }
 
+    alSourcei(channel->openal_source, AL_SAMPLE_OFFSET, channel->pos);
+
     alSourcefv(channel->openal_source, AL_POSITION, position_metric);
     alSourcePlay(channel->openal_source);
 
@@ -150,10 +153,47 @@ static void play(const channel_t* channel, const vec3_t position)
 
 }
 
+/*
+=================
+S_StaticSound
+=================
+*/
 void S_StaticSound (sfx_t *sfx, vec3_t origin, float vol, float attenuation)
 {
-  //  play(sfx, vol);
+	channel_t	*ss;
+	sfxcache_t		*sc;
+
+	if (!sfx)
+		return;
+
+	if (total_channels == MAX_CHANNELS)
+	{
+		Con_Printf ("total_channels == MAX_CHANNELS\n");
+		return;
+	}
+
+	ss = &channels[total_channels];
+	total_channels++;
+
+	sc = S_LoadSound (sfx);
+	if (!sc)
+		return;
+
+	if (sc->loopstart == -1)
+	{
+		Con_Printf ("Sound %s not looped\n", sfx->name);
+		return;
+	}
+
+	ss->sfx = sfx;
+	VectorCopy (origin, ss->origin);
+	ss->master_vol = vol;
+	ss->dist_mult = (attenuation/64) / sound_nominal_clip_dist;
+    ss->end = paintedtime + sc->length;
+
+    play(ss, origin);
 }
+
 
 void S_StartSound (int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float fvol,  float attenuation) {
 	sfxcache_t	*sc;
@@ -191,8 +231,6 @@ void S_StartSound (int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float 
 	target_chan->entchannel = entchannel;
     target_chan->openal_source = openal_source;
 
-    SND_Spatialize(target_chan);
-
     // TODO: put this in
 	//if (!target_chan->leftvol && !target_chan->rightvol)
 	//	return;		// not audible at all
@@ -218,14 +256,13 @@ void S_StartSound (int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float 
 			continue;
 		if (check->sfx == sfx && !check->pos)
 		{
-            /*
-			skip = rand () % (int)(0.1*shm->speed);
+            const int speed = 11025;
+			skip = rand () % (int)(0.1*speed);
 			if (skip >= target_chan->end)
 				skip = target_chan->end - 1;
 			target_chan->pos += skip;
 			target_chan->end -= skip;
 			break;
-             */
 		}
 
 	}
@@ -294,53 +331,6 @@ static void load(const char* name, sfx_t* dest)
     check_error();
 }
 
-
-
-/*
- =================
- SND_Spatialize
- =================
- */
-void SND_Spatialize(channel_t *ch)
-{
-    // TODO: OpenAL does this for us
-    vec_t dot;
-    vec_t ldist, rdist, dist;
-    vec_t lscale, rscale, scale;
-    vec3_t source_vec;
-	sfx_t *snd;
-
-    // anything coming from the view entity will allways be full volume
-	if (ch->entnum == cl.viewentity)
-	{
-		ch->leftvol = ch->master_vol;
-		ch->rightvol = ch->master_vol;
-		return;
-	}
-
-    // calculate stereo seperation and distance attenuation
-
-	snd = ch->sfx;
-	VectorSubtract(ch->origin, listener_origin, source_vec);
-
-	dist = VectorNormalize(source_vec) * ch->dist_mult;
-
-	dot = DotProduct(listener_right, source_vec);
-
-    rscale = 1.0 + dot;
-	lscale = 1.0 - dot;
-
-    // add in distance effect
-	scale = (1.0 - dist) * rscale;
-	ch->rightvol = (int) (ch->master_vol * scale);
-	if (ch->rightvol < 0)
-		ch->rightvol = 0;
-
-	scale = (1.0 - dist) * lscale;
-	ch->leftvol = (int) (ch->master_vol * scale);
-	if (ch->leftvol < 0)
-		ch->leftvol = 0;
-}
 
 /*
  =================
@@ -425,11 +415,23 @@ void S_Update (vec3_t origin, vec3_t forward, vec3_t right, vec3_t up)
 
 void S_StopAllSounds (qboolean clear)
 {
+    if (!sound.device)
+        return;
+
+    total_channels = MAX_DYNAMIC_CHANNELS + NUM_AMBIENTS;	// no statics
+
+    for (int i=0; i<MAX_CHANNELS; i++) {
+        alSourceStop(channels[i].openal_source);
+        check_error();
+
+    }
+
     // TODO: Stop all sources
     for (int i=0; i<sound.num_sfx; i++) {
         sfx_t* sfx = sound.known_sfx + i;
-        alDeleteBuffers(1, &sfx->openal_buffer);
-        check_error();
+//        alDeleteBuffers(1, &sfx->openal_buffer);
+//        check_error();
+        // TODO: destroy buffer
         sfx->openal_buffer = 0;
     }
     sound.num_sfx = 0;
