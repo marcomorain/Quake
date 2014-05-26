@@ -36,7 +36,7 @@ typedef struct sfx_s
 {
 	char 	name[MAX_QPATH];
 	cache_user_t	cache;
-    unsigned int buffer;
+    unsigned int openal_buffer;
 } sfx_t;
 
 // !!! if this is changed, it much be changed in asm_i386.h too !!!
@@ -78,6 +78,9 @@ typedef struct
 	vec3_t	origin;			// origin of sound effect
 	vec_t	dist_mult;		// distance multiplier (attenuation/clipK)
 	int		master_vol;		// 0-255 master volume
+
+    // OpenAL
+    unsigned int openal_source;
 } channel_t;
 
 typedef struct

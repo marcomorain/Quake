@@ -37,6 +37,15 @@ struct Sound {
     sfx_t ambient_sfx[NUM_AMBIENTS];
 };
 
+// From SND DMA
+channel_t   channels[MAX_CHANNELS]; // TODO: heap allocate?
+vec_t		sound_nominal_clip_dist=1000.0;
+int   		paintedtime; 	// sample PAIRS
+vec3_t		listener_origin;
+vec3_t		listener_forward;
+vec3_t		listener_right;
+vec3_t		listener_up;
+
 static qboolean	snd_ambient = 1;
 static struct Sound sound = {};
 
@@ -72,6 +81,7 @@ void S_Init (void)
         Con_SafePrintf("Error opening OpenAL device.\n");
     }
 
+
     Con_Printf("OpenAL initialised: %s\n", alGetString(AL_VERSION));
     Con_Printf("OpenAL Renderer:    %s\n", alGetString(AL_RENDERER));
     Con_Printf("OpenAL Extenstions: %s\n", alGetString(AL_EXTENSIONS));
@@ -80,6 +90,15 @@ void S_Init (void)
     check_error();
 
     alcMakeContextCurrent(sound.context);
+
+
+    ALuint sources[MAX_CHANNELS];
+    alGenSources(MAX_CHANNELS, sources);
+    check_error();
+
+    for (int i=0; i<MAX_CHANNELS; i++) {
+        channels[i].openal_source = sources[i];
+    }
 
 	sound.num_sfx = 0;
 }
@@ -112,15 +131,21 @@ void S_ClearBuffer (void)
 {
 }
 
-static void play(sfx_t* s, float vol)
+static void play(const channel_t* channel, const vec3_t position)
 {
-    ALuint source[1];
-    alGenSources(1, source);
+    alSourceQueueBuffers(channel->openal_source, 1, &channel->sfx->openal_buffer);
     check_error();
-    alSourceQueueBuffers(source[0], 1, &s->buffer);
-    check_error();
-    alSourcef(source[0], AL_GAIN, vol);
-    alSourcePlay(source[0]);
+    alSourcef(channel->openal_source, AL_GAIN, channel->master_vol);
+
+    vec3_t position_metric;
+    const double i_to_m = 1; //0.0254;
+    for (int i=0; i<3; i++) {
+        position_metric[i] = position[i] * i_to_m;
+    }
+
+    alSourcefv(channel->openal_source, AL_POSITION, position_metric);
+    alSourcePlay(channel->openal_source);
+
     check_error();
 
 }
@@ -130,14 +155,101 @@ void S_StaticSound (sfx_t *sfx, vec3_t origin, float vol, float attenuation)
   //  play(sfx, vol);
 }
 
-void S_StartSound (int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float fvol,  float attenuation)
-{
-    play(sfx, fvol);
+void S_StartSound (int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float fvol,  float attenuation) {
+	sfxcache_t	*sc;
+	int		ch_idx;
+	int		skip;
+
+    if (!sound.device) {
+        return;
+    }
+
+	if (!sfx) {
+		return;
+    }
+
+	if (nosound.value) {
+		return;
+    }
+
+	const int vol = fvol*255;
+
+    // pick a channel to play on
+    channel_t* target_chan = SND_PickChannel(entnum, entchannel);
+	if (!target_chan) {
+		return;
+    }
+
+    const int openal_source = target_chan->openal_source;
+
+    // spatialize
+	memset (target_chan, 0, sizeof(*target_chan));
+	VectorCopy(origin, target_chan->origin);
+	target_chan->dist_mult = attenuation / sound_nominal_clip_dist;
+	target_chan->master_vol = vol;
+	target_chan->entnum = entnum;
+	target_chan->entchannel = entchannel;
+    target_chan->openal_source = openal_source;
+
+    SND_Spatialize(target_chan);
+
+    // TODO: put this in
+	//if (!target_chan->leftvol && !target_chan->rightvol)
+	//	return;		// not audible at all
+
+    // new channel
+	sc = S_LoadSound (sfx);
+	if (!sc)
+	{
+		target_chan->sfx = NULL;
+		return;		// couldn't load the sound's data
+	}
+
+	target_chan->sfx = sfx;
+	target_chan->pos = 0.0;
+    target_chan->end = paintedtime + sc->length;
+
+    // if an identical sound has also been started this frame, offset the pos
+    // a bit to keep it from just making the first one louder
+    channel_t* check = &channels[NUM_AMBIENTS];
+    for (ch_idx=NUM_AMBIENTS ; ch_idx < NUM_AMBIENTS + MAX_DYNAMIC_CHANNELS ; ch_idx++, check++)
+    {
+		if (check == target_chan)
+			continue;
+		if (check->sfx == sfx && !check->pos)
+		{
+            /*
+			skip = rand () % (int)(0.1*shm->speed);
+			if (skip >= target_chan->end)
+				skip = target_chan->end - 1;
+			target_chan->pos += skip;
+			target_chan->end -= skip;
+			break;
+             */
+		}
+
+	}
+
+    play(target_chan, origin);
 }
 
-void S_StopSound (int entnum, int entchannel)
+void S_StopSound(int entnum, int entchannel)
 {
+	int i;
+
+	for (i=0 ; i<MAX_DYNAMIC_CHANNELS ; i++)
+	{
+		if (channels[i].entnum == entnum
+			&& channels[i].entchannel == entchannel)
+		{
+			channels[i].end = 0;
+			channels[i].sfx = NULL;
+			return;
+		}
+	}
 }
+
+
 
 sfx_t* S_FindName (struct Sound* s, char *name) {
 
@@ -177,9 +289,101 @@ static void load(const char* name, sfx_t* dest)
 
     check_error();
     //Con_Printf("Sound buffer %d assigned to sound %s", buffer, name);
-    dest->buffer = buffer;
+    dest->openal_buffer = buffer;
     alBufferData(buffer, format, cached->data, cached->length, 11025/2);
     check_error();
+}
+
+
+
+/*
+ =================
+ SND_Spatialize
+ =================
+ */
+void SND_Spatialize(channel_t *ch)
+{
+    // TODO: OpenAL does this for us
+    vec_t dot;
+    vec_t ldist, rdist, dist;
+    vec_t lscale, rscale, scale;
+    vec3_t source_vec;
+	sfx_t *snd;
+
+    // anything coming from the view entity will allways be full volume
+	if (ch->entnum == cl.viewentity)
+	{
+		ch->leftvol = ch->master_vol;
+		ch->rightvol = ch->master_vol;
+		return;
+	}
+
+    // calculate stereo seperation and distance attenuation
+
+	snd = ch->sfx;
+	VectorSubtract(ch->origin, listener_origin, source_vec);
+
+	dist = VectorNormalize(source_vec) * ch->dist_mult;
+
+	dot = DotProduct(listener_right, source_vec);
+
+    rscale = 1.0 + dot;
+	lscale = 1.0 - dot;
+
+    // add in distance effect
+	scale = (1.0 - dist) * rscale;
+	ch->rightvol = (int) (ch->master_vol * scale);
+	if (ch->rightvol < 0)
+		ch->rightvol = 0;
+
+	scale = (1.0 - dist) * lscale;
+	ch->leftvol = (int) (ch->master_vol * scale);
+	if (ch->leftvol < 0)
+		ch->leftvol = 0;
+}
+
+/*
+ =================
+ SND_PickChannel
+ =================
+ */
+channel_t *SND_PickChannel(int entnum, int entchannel)
+{
+    int ch_idx;
+    int first_to_die;
+    int life_left;
+
+    // Check for replacement sound, or find the best one to replace
+    first_to_die = -1;
+    life_left = 0x7fffffff;
+    for (ch_idx=NUM_AMBIENTS ; ch_idx < NUM_AMBIENTS + MAX_DYNAMIC_CHANNELS ; ch_idx++)
+    {
+		if (entchannel != 0		// channel 0 never overrides
+            && channels[ch_idx].entnum == entnum
+            && (channels[ch_idx].entchannel == entchannel || entchannel == -1) )
+		{	// allways override sound from same entity
+			first_to_die = ch_idx;
+			break;
+		}
+
+		// don't let monster sounds override player sounds
+		if (channels[ch_idx].entnum == cl.viewentity && entnum != cl.viewentity && channels[ch_idx].sfx)
+			continue;
+
+		if (channels[ch_idx].end - paintedtime < life_left)
+		{
+			life_left = channels[ch_idx].end - paintedtime;
+			first_to_die = ch_idx;
+		}
+    }
+
+	if (first_to_die == -1)
+		return NULL;
+
+	if (channels[first_to_die].sfx)
+		channels[first_to_die].sfx = NULL;
+    
+    return &channels[first_to_die];    
 }
 
 /*
@@ -203,24 +407,30 @@ void S_ClearPrecache (void)
 {
 }
 
-void S_Update (vec3_t origin, vec3_t v_forward, vec3_t v_right, vec3_t v_up)
+void S_Update (vec3_t origin, vec3_t forward, vec3_t right, vec3_t up)
 {
+    VectorCopy(origin, listener_origin);
+	VectorCopy(forward, listener_forward);
+	VectorCopy(right, listener_right);
+	VectorCopy(up, listener_up);
+
     float orientation[6];
     for (int i=0; i<3; i++) {
-        orientation[i]   = v_forward[i];
-        orientation[i+3] = v_up[i];
+        orientation[i]   = forward[i];
+        orientation[i+3] = up[i];
     }
-    //alListenerfv(AL_POSITION,    origin);
+    alListenerfv(AL_POSITION,    origin);
     //alListenerfv(AL_ORIENTATION, orientation);
 }
 
 void S_StopAllSounds (qboolean clear)
 {
+    // TODO: Stop all sources
     for (int i=0; i<sound.num_sfx; i++) {
         sfx_t* sfx = sound.known_sfx + i;
-        alDeleteBuffers(1, &sfx->buffer);
+        alDeleteBuffers(1, &sfx->openal_buffer);
         check_error();
-        sfx->buffer = 0;
+        sfx->openal_buffer = 0;
     }
     sound.num_sfx = 0;
 }
@@ -239,10 +449,11 @@ void S_ExtraUpdate (void)
 
 void S_LocalSound (char *s)
 {
-    sfx_t* sfx = S_FindName(&sound, s);
-    if (sfx->buffer == 0) {
-        load(s, sfx);
-    }
-    play(sfx, 1);
+    // TODO
+   // sfx_t* sfx = S_FindName(&sound, s);
+  //  if (sfx->openal_buffer == 0) {
+   //     load(s, sfx);
+ //   }
+//    play(sfx, 1);
 }
 
