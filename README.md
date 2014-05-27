@@ -4,6 +4,10 @@
 
 This is a fork of the original GPL release of Quake, ported to OSX. The port should work on any BSD or Linux that supports GLFW and OpenAL.
 
+## Building
+
+This project should build using the latest Xcode. Open the [`osx` project in WinQuake](WinQuake/osx/osx.xcodeproj). You will need to install GLFW and OpenAL for windowing management and sound support.
+
 # Original Readme
 
 This is the complete source code for winquake, glquake, quakeworld, and 
