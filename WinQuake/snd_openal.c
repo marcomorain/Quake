@@ -70,7 +70,7 @@ static void check_error() {
     int error = alGetError();
 
     if (error != AL_NO_ERROR) {
-        Con_Printf("OpenAL Error (%x) %s\n", error, alGetString(error));
+        //Con_Printf("OpenAL Error (%x) %s\n", error, alGetString(error));
         //assert(0);
     }
 }
@@ -235,7 +235,7 @@ void S_StartSound (int entnum, int entchannel, const sfx_t *sfx, vec3_t origin, 
 
 //    if (strcmp("weapons/guncock.wav", sfx->name) == 0) {
         sfxcache_t* cached = sfx->cache.data;
-        printf("playing %s on %d at %d [%d]\n", sfx->name, target_chan->openal_source, vol, cached->speed);
+//        printf("` %s on %d at %d [%d]\n", sfx->name, target_chan->openal_source, vol, cached->speed);
   //  }
 
     const int openal_source = target_chan->openal_source;
