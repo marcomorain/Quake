@@ -121,7 +121,7 @@ sfxcache_t *S_LoadSound (sfx_t *s)
     Q_strcpy(namebuffer, "sound/");
     Q_strcat(namebuffer, s->name);
 
-//	Con_Printf ("loading %s\n",namebuffer);
+        //Con_Printf ("loading %s\n",namebuffer);
 
 	data = COM_LoadStackFile(namebuffer, stackbuf, sizeof(stackbuf));
 

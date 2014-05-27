@@ -123,7 +123,7 @@ void GL_Init (void)
     Con_Printf ("GL_VENDOR:     %s\n", gl_vendor);
 	Con_Printf ("GL_RENDERER:   %s\n", gl_renderer);
 	Con_Printf ("GL_VERSION:    %s\n", gl_version);
-	Con_Printf ("GL_EXTENSIONS: %s\n", gl_extensions);
+	//Con_Printf ("GL_EXTENSIONS: %s\n", gl_extensions);
     
     //	Con_Printf ("%s %s\n", gl_renderer, gl_version);
     

@@ -15,10 +15,7 @@ See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
 */
-// snd_null.c -- include this instead of all the other snd_* files to have
-// no sound code whatsoever
 
 #include "quakedef.h"
 #include <OpenAL/al.h>
@@ -55,6 +52,19 @@ cvar_t volume     = {"volume",     "0.7", true};
 cvar_t nosound    = {"nosound",    "0"};
 cvar_t precache   = {"precache",   "1"};
 cvar_t loadas8bit = {"loadas8bit", "0"};
+
+
+
+const static float meters_to_inches(const float v) {
+    return v * 39.3701f;
+}
+
+// Convert an OpenAL source to use inches as the scale
+static void convert_to_inches(int sid) {
+    float f;
+    alGetSourcef(sid, AL_REFERENCE_DISTANCE, &f);
+    alSourcef(sid, AL_REFERENCE_DISTANCE, meters_to_inches(f));
+}
 
 static void check_error() {
     int error = alGetError();
@@ -93,11 +103,13 @@ void S_Init (void)
     alcMakeContextCurrent(sound.context);
 
 
+
     ALuint sources[MAX_CHANNELS];
     alGenSources(MAX_CHANNELS, sources);
     check_error();
 
     for (int i=0; i<MAX_CHANNELS; i++) {
+        convert_to_inches(sources[i]);
         channels[i].openal_source = sources[i];
     }
 
@@ -135,28 +147,11 @@ void S_ClearBuffer (void)
 static void play(const channel_t* channel, const vec3_t position)
 {
     const int sid = channel->openal_source;
-
-    alSourceStop(sid);
+    alSourcei(sid, AL_BUFFER, channel->sfx->openal_buffer);
     check_error();
 
-    //alSourceRewind(sid);
-    check_error();
-
-    for (;;) {
-        ALuint processed;
-        alGetSourcei(sid, AL_BUFFERS_PROCESSED, &processed);
-        alSourceUnqueueBuffers(<#ALuint sid#>, <#ALsizei numEntries#>, <#ALuint *bids#>)
-    }
-
-    alSourceUnqueueBuffers(sid, 0, 0);
-
-
-
-
-
-    alSourceQueueBuffers(sid, 1, &channel->sfx->openal_buffer);
-    check_error();
     alSourcef(sid, AL_GAIN, channel->master_vol/255.0f);
+    check_error();
 
     vec3_t position_metric;
     const double i_to_m = 1; //0.0254;
@@ -164,14 +159,11 @@ static void play(const channel_t* channel, const vec3_t position)
         position_metric[i] = position[i] * i_to_m;
     }
 
-   // alSourcei(sid, AL_SAMPLE_OFFSET, channel->pos);
-
+    alSourcei(sid, AL_SAMPLE_OFFSET, channel->pos);
     alSourcefv(sid, AL_POSITION, position_metric);
     check_error();
     alSourcePlay(sid);
-
     check_error();
-
 }
 
 /*
@@ -218,10 +210,7 @@ void S_StaticSound (sfx_t *sfx, vec3_t origin, float vol, float attenuation)
 }
 
 
-void S_StartSound (int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float fvol,  float attenuation) {
-
-	int		ch_idx;
-	int		skip;
+void S_StartSound (int entnum, int entchannel, const sfx_t *sfx, vec3_t origin, float fvol,  float attenuation) {
 
     if (!sound.device) {
         return;
@@ -244,7 +233,10 @@ void S_StartSound (int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float 
 		return;
     }
 
-    printf("playing %s on %d at %d\n", sfx->name, target_chan->openal_source, vol);
+//    if (strcmp("weapons/guncock.wav", sfx->name) == 0) {
+        sfxcache_t* cached = sfx->cache.data;
+        printf("playing %s on %d at %d [%d]\n", sfx->name, target_chan->openal_source, vol, cached->speed);
+  //  }
 
     const int openal_source = target_chan->openal_source;
 
@@ -276,16 +268,18 @@ void S_StartSound (int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float 
     // if an identical sound has also been started this frame, offset the pos
     // a bit to keep it from just making the first one louder
     channel_t* check = &channels[NUM_AMBIENTS];
-    for (ch_idx=NUM_AMBIENTS ; ch_idx < NUM_AMBIENTS + MAX_DYNAMIC_CHANNELS ; ch_idx++, check++)
+
+    for (int ch_idx=NUM_AMBIENTS ; ch_idx < NUM_AMBIENTS + MAX_DYNAMIC_CHANNELS ; ch_idx++, check++)
     {
 		if (check == target_chan)
 			continue;
 		if (check->sfx == sfx && !check->pos)
 		{
             const int speed = 11025;
-			skip = rand () % (int)(0.1*speed);
+			int skip = rand () % (int)(0.1*speed);
 			if (skip >= target_chan->end)
 				skip = target_chan->end - 1;
+            // TODO: skip for sounds that collide
 			//target_chan->pos += skip;
 			//target_chan->end -= skip;
 			break;
@@ -333,6 +327,7 @@ sfx_t* S_FindName (struct Sound* s, char *name) {
     // some memory to load the sound into.
     sfx_t* result = s->known_sfx + i;
 	strcpy(result->name, name);
+//    Con_Printf("Precache sound [%d] %s\n", i, name);
 	s->num_sfx++;
 	return result;
 }
@@ -341,17 +336,13 @@ sfx_t* S_FindName (struct Sound* s, char *name) {
 static void load(const char* name, sfx_t* dest)
 {
     S_LoadSound(dest);
-
     const int format = AL_FORMAT_MONO16;
     sfxcache_t* cached = dest->cache.data;
-
     ALuint buffer = 0;
     alGenBuffers(1, &buffer);
-
     check_error();
-    //Con_Printf("Sound buffer %d assigned to sound %s\n", buffer, name);
     dest->openal_buffer = buffer;
-    alBufferData(buffer, format, cached->data, cached->length, 11025/2);
+    alBufferData(buffer, format, cached->data, cached->length, cached->speed / 2);
     check_error();
 }
 
@@ -473,13 +464,20 @@ void S_ExtraUpdate (void)
 {
 }
 
-void S_LocalSound (char *s)
+void S_LocalSound (char *name)
 {
-    // TODO
-   // sfx_t* sfx = S_FindName(&sound, s);
-  //  if (sfx->openal_buffer == 0) {
-   //     load(s, sfx);
- //   }
-//    play(sfx, 1);
+	if (nosound.value)
+		return;
+
+	if (!sound.device)
+		return;
+
+	const sfx_t* sfx = S_PrecacheSound (name);
+	if (!sfx)
+	{
+		Con_Printf ("S_LocalSound: can't cache %s\n", sound);
+		return;
+	}
+	S_StartSound (cl.viewentity, -1, sfx, vec3_origin, 1, 1);
 }
 
