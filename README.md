@@ -1,5 +1,11 @@
 # Quake OSX Port
 
+![osx_quake](https://cloud.githubusercontent.com/assets/448001/3096877/571addac-e5d9-11e3-8d66-f1d8b40565b8.png)
+
+This is a fork of the original GPL release of Quake, ported to OSX. The port should work on any BSD or Linux that supports GLFW and OpenAL.
+
+# Original Readme
+
 This is the complete source code for winquake, glquake, quakeworld, and 
 glquakeworld.
 
