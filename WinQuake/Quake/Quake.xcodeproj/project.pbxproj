@@ -58,6 +58,7 @@
 		8F6CA558193BE51700253211 /* net_bsd.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F6CA557193BE51700253211 /* net_bsd.c */; };
 		8F6CA55A193BE55B00253211 /* net_dgrm.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F6CA559193BE55B00253211 /* net_dgrm.c */; };
 		8F6CA55C193BE58200253211 /* net_udp.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F6CA55B193BE58200253211 /* net_udp.c */; };
+		8F6CA55E193BE8C900253211 /* net_loop.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F6CA55D193BE8C900253211 /* net_loop.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -126,6 +127,7 @@
 		8F6CA557193BE51700253211 /* net_bsd.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = net_bsd.c; path = ../net_bsd.c; sourceTree = "<group>"; };
 		8F6CA559193BE55B00253211 /* net_dgrm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = net_dgrm.c; path = ../net_dgrm.c; sourceTree = "<group>"; };
 		8F6CA55B193BE58200253211 /* net_udp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = net_udp.c; path = ../net_udp.c; sourceTree = "<group>"; };
+		8F6CA55D193BE8C900253211 /* net_loop.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = net_loop.c; path = ../net_loop.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -143,6 +145,7 @@
 		8F6CA4E4193B95CD00253211 = {
 			isa = PBXGroup;
 			children = (
+				8F6CA55D193BE8C900253211 /* net_loop.c */,
 				8F6CA55B193BE58200253211 /* net_udp.c */,
 				8F6CA555193BE39E00253211 /* gl_vidnull.c */,
 				8F6CA559193BE55B00253211 /* net_dgrm.c */,
@@ -270,6 +273,7 @@
 				8F6CA51C193BD57400253211 /* cl_main.c in Sources */,
 				8F6CA528193BD5D100253211 /* sv_user.c in Sources */,
 				8F6CA512193BD50400253211 /* keys.c in Sources */,
+				8F6CA55E193BE8C900253211 /* net_loop.c in Sources */,
 				8F6CA50A193BC8BC00253211 /* console.c in Sources */,
 				8F6CA526193BD5D100253211 /* sv_move.c in Sources */,
 				8F6CA506193BC84100253211 /* cmd.c in Sources */,
