@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>1320D7F3-5016-4A46-B037-D33DA78CD366</string>
+	<key>IDESourceControlProjectName</key>
+	<string>Quake</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>372C7207-49BF-4943-8EB8-65497F37DA4B</key>
+		<string>ssh://github.com/marcomorain/Quake.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>WinQuake/Quake/Quake.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>372C7207-49BF-4943-8EB8-65497F37DA4B</key>
+		<string>../../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>ssh://github.com/marcomorain/Quake.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>372C7207-49BF-4943-8EB8-65497F37DA4B</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>372C7207-49BF-4943-8EB8-65497F37DA4B</string>
+			<key>IDESourceControlWCCName</key>
+			<string>Quake</string>
+		</dict>
+	</array>
+</dict>
+</plist>
