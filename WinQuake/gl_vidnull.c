@@ -31,10 +31,10 @@ float		gldepthmin, gldepthmax;
 
 cvar_t	gl_ztrick = {"gl_ztrick","1"};
 
-const char *gl_vendor;
-const char *gl_renderer;
-const char *gl_version;
-const char *gl_extensions;
+const char *gl_vendor = "null_vendor";
+const char *gl_renderer = "null_renderer";
+const char *gl_version = "null_version";
+const char *gl_extensions = "null_extensions";
 
 qboolean is8bit = false;
 qboolean isPermedia = false;
