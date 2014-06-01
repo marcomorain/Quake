@@ -22,6 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "quakedef.h"
 #include "errno.h"
 
+qboolean			isDedicated;
+
 /*
 ===============================================================================
 
@@ -217,6 +219,7 @@ void main (int argc, char **argv)
 	parms.basedir = ".";
 
 	COM_InitArgv (argc, argv);
+    isDedicated = (COM_CheckParm ("-dedicated") != 0);
 
 	parms.argc = com_argc;
 	parms.argv = com_argv;
