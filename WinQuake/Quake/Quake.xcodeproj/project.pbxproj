@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		8F6CA4F1193B95CD00253211 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F6CA4F0193B95CD00253211 /* main.c */; };
 		8F6CA4F3193B95CD00253211 /* Quake.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8F6CA4F2193B95CD00253211 /* Quake.1 */; };
+		8F6CA4FA193B987400253211 /* sys_null.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F6CA4F9193B987400253211 /* sys_null.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -26,8 +26,8 @@
 
 /* Begin PBXFileReference section */
 		8F6CA4ED193B95CD00253211 /* Quake */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Quake; sourceTree = BUILT_PRODUCTS_DIR; };
-		8F6CA4F0193B95CD00253211 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		8F6CA4F2193B95CD00253211 /* Quake.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = Quake.1; sourceTree = "<group>"; };
+		8F6CA4F9193B987400253211 /* sys_null.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sys_null.c; path = ../../sys_null.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,7 +60,7 @@
 		8F6CA4EF193B95CD00253211 /* Quake */ = {
 			isa = PBXGroup;
 			children = (
-				8F6CA4F0193B95CD00253211 /* main.c */,
+				8F6CA4F9193B987400253211 /* sys_null.c */,
 				8F6CA4F2193B95CD00253211 /* Quake.1 */,
 			);
 			path = Quake;
@@ -117,7 +117,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8F6CA4F1193B95CD00253211 /* main.c in Sources */,
+				8F6CA4FA193B987400253211 /* sys_null.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
