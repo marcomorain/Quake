@@ -233,10 +233,11 @@ void S_StartSound (int entnum, int entchannel, const sfx_t *sfx, vec3_t origin, 
 		return;
     }
 
-//    if (strcmp("weapons/guncock.wav", sfx->name) == 0) {
+    if (1 || strcmp("weapons/guncock.wav", sfx->name) == 0) {
         sfxcache_t* cached = sfx->cache.data;
-//        printf("` %s on %d at %d [%d]\n", sfx->name, target_chan->openal_source, vol, cached->speed);
-  //  }
+        printf("` %s on %d at %d speed: %d width: %d\n",
+               sfx->name, target_chan->openal_source, vol, cached->speed, cached->width);
+    }
 
     const int openal_source = target_chan->openal_source;
 
@@ -344,6 +345,8 @@ static void load(const char* name, sfx_t* dest)
     dest->openal_buffer = buffer;
     alBufferData(buffer, format, cached->data, cached->length, cached->speed / 2);
     check_error();
+    
+    printf("loading %s\n", name);
 }
 
 
