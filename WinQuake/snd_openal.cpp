@@ -17,18 +17,20 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
+extern "C" {
 #include "quakedef.h"
-#include <OpenAL/al.h>
-#include <OpenAL/alc.h>
+    //#include <OpenAL/al.h>
+    //#include <OpenAL/alc.h>
 #include "assert.h"
+}
+#include "fmod.hpp"
 
 enum {
     MAX_SFX = 512,
 };
 
 struct Sound {
-    ALCdevice*  device;
-    ALCcontext* context;
+    FMOD::System    *system;
     int		    num_sfx;
     sfx_t known_sfx[MAX_SFX];
     sfx_t ambient_sfx[NUM_AMBIENTS];
@@ -54,26 +56,8 @@ cvar_t precache   = {"precache",   "1"};
 cvar_t loadas8bit = {"loadas8bit", "0"};
 
 
+static float INCHES_PER_METER = 39.3701f;
 
-const static float meters_to_inches(const float v) {
-    return v * 39.3701f;
-}
-
-// Convert an OpenAL source to use inches as the scale
-static void convert_to_inches(int sid) {
-    float f;
-    alGetSourcef(sid, AL_REFERENCE_DISTANCE, &f);
-    alSourcef(sid, AL_REFERENCE_DISTANCE, meters_to_inches(f));
-}
-
-static void check_error() {
-    int error = alGetError();
-
-    if (error != AL_NO_ERROR) {
-        //Con_Printf("OpenAL Error (%x) %s\n", error, alGetString(error));
-        //assert(0);
-    }
-}
 
 void S_Init (void)
 {
@@ -84,34 +68,19 @@ void S_Init (void)
     Cvar_RegisterVariable(&precache);
     Cvar_RegisterVariable(&loadas8bit);
     
-    sound.device = alcOpenDevice(NULL);
-
-
-    check_error();
-    if (!sound.device) {
-        Con_SafePrintf("Error opening OpenAL device.\n");
+    FMOD_RESULT result = FMOD::System_Create(&sound.system);
+    
+    if (result != FMOD_OK) {
+        Con_SafePrintf("Error opening FMOD device.\n");
     }
+    
+    // TODO: extra driver data
+    result = sound.system->init(MAX_SFX, FMOD_INIT_NORMAL, NULL);
 
+    
+    // TODO: FMOD to inches
+    result = sound.system->set3DSettings(1.0, INCHES_PER_METER, 1.0f);
 
-    Con_Printf("OpenAL initialised: %s\n", alGetString(AL_VERSION));
-    Con_Printf("OpenAL Renderer:    %s\n", alGetString(AL_RENDERER));
-    Con_Printf("OpenAL Extenstions: %s\n", alGetString(AL_EXTENSIONS));
-
-    sound.context = alcCreateContext(sound.device, NULL);
-    check_error();
-
-    alcMakeContextCurrent(sound.context);
-
-
-
-    ALuint sources[MAX_CHANNELS];
-    alGenSources(MAX_CHANNELS, sources);
-    check_error();
-
-    for (int i=0; i<MAX_CHANNELS; i++) {
-        convert_to_inches(sources[i]);
-        channels[i].openal_source = sources[i];
-    }
 
 	sound.num_sfx = 0;
 }
@@ -128,11 +97,12 @@ void S_AmbientOn (void)
 
 void S_Shutdown (void)
 {
-    alcMakeContextCurrent(NULL);
-    // TODO:
-    // alDeleteBuffers();
-    alcDestroyContext(sound.context);
-    alcCloseDevice(sound.device);
+    FMOD_RESULT result;
+    result = sound.system->close();
+    result = sound.system->release();
+    
+    // TODO: check results
+    
     memset(&sound, 0, sizeof(struct Sound));
 }
 
@@ -147,11 +117,11 @@ void S_ClearBuffer (void)
 static void play(const channel_t* channel, const vec3_t position)
 {
     const int sid = channel->openal_source;
-    alSourcei(sid, AL_BUFFER, channel->sfx->openal_buffer);
-    check_error();
+    //alSourcei(sid, AL_BUFFER, channel->sfx->openal_buffer);
+    //check_error();
 
-    alSourcef(sid, AL_GAIN, channel->master_vol/255.0f);
-    check_error();
+    //alSourcef(sid, AL_GAIN, channel->master_vol/255.0f);
+    //check_error();
 
     vec3_t position_metric;
     const double i_to_m = 1; //0.0254;
@@ -159,11 +129,13 @@ static void play(const channel_t* channel, const vec3_t position)
         position_metric[i] = position[i] * i_to_m;
     }
 
-    alSourcei(sid, AL_SAMPLE_OFFSET, channel->pos);
-    alSourcefv(sid, AL_POSITION, position_metric);
-    check_error();
-    alSourcePlay(sid);
-    check_error();
+    //alSourcei(sid, AL_SAMPLE_OFFSET, channel->pos);
+    //alSourcefv(sid, AL_POSITION, position_metric);
+    //check_error();
+    //alSourcePlay(sid);
+    //check_error();
+    
+    // TODO: play
 }
 
 /*
@@ -212,7 +184,7 @@ void S_StaticSound (sfx_t *sfx, vec3_t origin, float vol, float attenuation)
 
 void S_StartSound (int entnum, int entchannel, const sfx_t *sfx, vec3_t origin, float fvol,  float attenuation) {
 
-    if (!sound.device) {
+    if (!sound.system) {
         return;
     }
 
@@ -234,7 +206,7 @@ void S_StartSound (int entnum, int entchannel, const sfx_t *sfx, vec3_t origin, 
     }
 
     if (1 || strcmp("weapons/guncock.wav", sfx->name) == 0) {
-        sfxcache_t* cached = sfx->cache.data;
+        sfxcache_t* cached = (sfxcache_t*)sfx->cache.data;
         printf("` %s on %d at %d speed: %d width: %d\n",
                sfx->name, target_chan->openal_source, vol, cached->speed, cached->width);
     }
@@ -262,7 +234,7 @@ void S_StartSound (int entnum, int entchannel, const sfx_t *sfx, vec3_t origin, 
 		return;		// couldn't load the sound's data
 	}
 
-	target_chan->sfx = sfx;
+	target_chan->sfx = const_cast<sfx_t*>(sfx);
 	target_chan->pos = 0.0;
     target_chan->end = paintedtime + sc->length;
 
@@ -337,7 +309,7 @@ sfx_t* S_FindName (struct Sound* s, char *name) {
 static void load(const char* name, sfx_t* dest)
 {
     S_LoadSound(dest);
-    const int format = AL_FORMAT_MONO16;
+    /*const int format = AL_FORMAT_MONO16;
     sfxcache_t* cached = dest->cache.data;
     ALuint buffer = 0;
     alGenBuffers(1, &buffer);
@@ -345,6 +317,9 @@ static void load(const char* name, sfx_t* dest)
     dest->openal_buffer = buffer;
     alBufferData(buffer, format, cached->data, cached->length, cached->speed / 2);
     check_error();
+     */
+    
+    // TODO: load sample
     
     printf("loading %s\n", name);
 }
@@ -402,7 +377,7 @@ channel_t *SND_PickChannel(int entnum, int entchannel)
  */
 sfx_t *S_PrecacheSound (char *name)
 {
-    assert(sound.device && sound.context);
+    assert(sound.system);
 
     sfx_t* result = S_FindName(&sound, name);
     if (precache.value) {
@@ -427,20 +402,26 @@ void S_Update (vec3_t origin, vec3_t forward, vec3_t right, vec3_t up)
         orientation[i]   = forward[i];
         orientation[i+3] = up[i];
     }
-    alListenerfv(AL_POSITION,    origin);
-    alListenerfv(AL_ORIENTATION, orientation);
+    
+    // alListenerfv(AL_POSITION,    origin);
+    // alListenerfv(AL_ORIENTATION, orientation);
+    
+    sound.system->update();
+    
+    // TODO: FMOD_SYSTEM_CALLBACK
 }
 
 void S_StopAllSounds (qboolean clear)
 {
-    if (!sound.device)
+    if (!sound.system)
         return;
 
     total_channels = MAX_DYNAMIC_CHANNELS + NUM_AMBIENTS;	// no statics
 
     for (int i=0; i<MAX_CHANNELS; i++) {
-        alSourceStop(channels[i].openal_source);
-        check_error();
+        //alSourceStop(channels[i].openal_source);
+        //check_error();
+        // TODO: stop all sounds
 
     }
 
@@ -472,7 +453,7 @@ void S_LocalSound (char *name)
 	if (nosound.value)
 		return;
 
-	if (!sound.device)
+	if (!sound.system)
 		return;
 
 	const sfx_t* sfx = S_PrecacheSound (name);

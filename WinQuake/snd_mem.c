@@ -101,7 +101,7 @@ void ResampleSfx (sfx_t *sfx, int inrate, int inwidth, byte *data)
 S_LoadSound
 ==============
 */
-sfxcache_t *S_LoadSound (sfx_t *s)
+sfxcache_t *S_LoadSound (const sfx_t *s)
 {
     char	namebuffer[256];
 	byte	*data;
