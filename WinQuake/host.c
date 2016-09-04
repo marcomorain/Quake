@@ -709,7 +709,13 @@ void _Host_Frame (float time)
 		CL_DecayLights ();
 	}
 	else
-		S_Update (vec3_origin, vec3_origin, vec3_origin, vec3_origin);
+    {
+        vec3_t up = {0,0,1};
+        vec3_t rt = {0,1,0};
+        vec3_t fw = {1,0,0};
+        S_Update (vec3_origin, fw, rt, up);
+    }
+		
 	
 	CDAudio_Update();
 

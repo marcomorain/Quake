@@ -32,11 +32,14 @@ typedef struct
 	int right;
 } portable_samplepair_t;
 
+
+struct FMOD_SOUND;
+
 typedef struct sfx_s
 {
 	char 	name[MAX_QPATH];
 	cache_user_t	cache;
-    unsigned int openal_buffer;
+    struct FMOD_SOUND* fmod_sound;
 } sfx_t;
 
 // !!! if this is changed, it much be changed in asm_i386.h too !!!
@@ -64,6 +67,8 @@ typedef struct
 	unsigned char	*buffer;
 } dma_t;
 
+
+struct FMOD_CHANNEL;
 // !!! if this is changed, it much be changed in asm_i386.h too !!!
 typedef struct
 {
@@ -80,7 +85,7 @@ typedef struct
 	int		master_vol;		// 0-255 master volume
 
     // OpenAL
-    unsigned int openal_source;
+    struct FMOD_CHANNEL* channel;
 } channel_t;
 
 typedef struct
